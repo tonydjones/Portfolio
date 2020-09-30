@@ -1,0 +1,134 @@
+#title a
+{
+    
+    font-size: 100px;
+    color:black;
+}
+
+#title
+{
+    text-align: center;
+    font-size: 100px;
+    color:black;
+}
+
+
+
+
+
+.image
+{
+    width: 30%;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    float: left;
+}
+
+.centerimg
+{
+    height:auto;
+    width: 100%;
+}
+
+.top
+{
+    height: 450px;
+}
+
+.section
+{
+    margin-left: 50px;
+}
+
+@media (min-width: 1300px){
+    .leftbox
+{
+    float: left;
+    width: 45%;
+    height: 100%;
+    margin-left: 50px;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.rightbox
+{
+    float: right;
+    width: 45%;
+    height: 100%;
+    margin-left: 10px;
+    margin-right: 50px;
+    text-align: center;
+}
+
+.pageimg
+{
+    max-height: 90%;
+    max-width: 90%
+}
+
+.pagediv
+{
+    height : 300px;
+}
+
+}
+
+@media (max-width: 1299px){
+    .leftbox
+{
+    float: top;
+    height: 48%;
+    text-align: center;
+}
+
+.rightbox
+{
+    float: bottom;
+    height: 48%;
+    text-align: center;
+}
+
+.pageimg
+{
+    max-height: 90%;
+    max-width: 90%;
+}
+
+.pagediv
+{
+    height : 500px;
+}
+
+}
+
+.pgtitle
+{
+    text-align: center;
+    font-size: 65px;
+}
+
+.video
+{
+    width: 100%;
+    height: 100%;
+}
+
+.dark
+{
+    border: 1px solid black;
+    width: 93%;
+}
+
+.invisible
+{
+    opacity: 0;
+}
+
+.light
+{
+    border: 1px solid black;
+    width: 93%;
+    opacity: .4;
+}

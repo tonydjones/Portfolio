@@ -1,0 +1,19 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    New Page
+{% endblock %}
+
+{% block body %}
+
+    {% if FileError %}
+    <h3>Error: A page already exists with that title. If you wish to edit the page, go to the <a href="/wiki/{{title}}">page</a> and edit it.</h3>
+    {% endif %}
+
+    <form action="{% url 'new' %}" method="POST">
+        {% csrf_token %}
+    {{form}}
+    <input type="submit" value="Save Page">
+</form>
+
+{% endblock %}

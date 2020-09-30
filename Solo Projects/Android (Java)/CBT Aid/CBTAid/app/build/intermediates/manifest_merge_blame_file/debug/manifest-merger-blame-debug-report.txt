@@ -1,0 +1,76 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.cbtaid"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+8-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml
+9        android:targetSdkVersion="29" />
+9-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml
+10
+11    <application
+11-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:5:5-29:19
+12        android:allowBackup="true"
+12-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:6:9-35
+13        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+13-->[androidx.core:core:1.1.0] C:\Users\Tony D Jones\.gradle\caches\transforms-2\files-2.1\34b4ab0d8b65ac74ddd00d45b26dd963\core-1.1.0\AndroidManifest.xml:24:18-86
+14        android:debuggable="true"
+15        android:icon="@mipmap/ic_launcher"
+15-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:7:9-43
+16        android:label="@string/app_name"
+16-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:8:9-41
+17        android:roundIcon="@mipmap/ic_launcher_round"
+17-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:9:9-54
+18        android:supportsRtl="true"
+18-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:10:9-35
+19        android:theme="@style/AppTheme" >
+19-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:11:9-40
+20        <activity android:name="com.example.cbtaid.MainActivity" >
+20-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:12:9-18:20
+20-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:12:19-47
+21            <intent-filter>
+21-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:13:13-17:29
+22                <action android:name="android.intent.action.MAIN" />
+22-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:14:17-69
+22-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:14:25-66
+23
+24                <category android:name="android.intent.category.LAUNCHER" />
+24-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:16:17-77
+24-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:16:27-74
+25            </intent-filter>
+26        </activity>
+27        <activity android:name="com.example.cbtaid.SituationActivity" />
+27-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:19:9-64
+27-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:19:19-52
+28        <activity android:name="com.example.cbtaid.EmotionsActivity" />
+28-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:20:9-63
+28-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:20:19-51
+29        <activity android:name="com.example.cbtaid.BeliefsActivity" />
+29-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:21:9-62
+29-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:21:19-50
+30        <activity android:name="com.example.cbtaid.ErrorsActivity" />
+30-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:22:9-61
+30-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:22:19-49
+31        <activity android:name="com.example.cbtaid.ResponseActivity" />
+31-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:23:9-63
+31-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:23:19-51
+32        <activity android:name="com.example.cbtaid.RethinkActivity" />
+32-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:24:9-62
+32-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:24:19-50
+33        <activity android:name="com.example.cbtaid.ReviewActivity" />
+33-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:25:9-61
+33-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:25:19-49
+34        <activity android:name="com.example.cbtaid.DetailActivity" />
+34-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:26:9-61
+34-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:26:19-49
+35        <activity android:name="com.example.cbtaid.SummaryActivity" />
+35-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:27:9-62
+35-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:27:19-50
+36        <activity android:name="com.example.cbtaid.RecapActivity" />
+36-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:28:9-60
+36-->C:\Users\Tony D Jones\Downloads\CBTAid\app\src\main\AndroidManifest.xml:28:19-48
+37    </application>
+38
+39</manifest>

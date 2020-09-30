@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+    <h1 style = "text-align: center">
+        ${{ total }}
+    </h1>
+    <table>
+        <tr>
+            <th>
+                Stock
+            </th>
+            <th>
+                Shares
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Total Value
+            </th>
+        {%for item in data%}
+            <tr>
+                <td>
+                    {{ item['stock'] }}
+                </td>
+                <td>
+                    {{ item['shares'] }}
+                </td>
+                <td>
+                    {{ item['price'] }}
+                </td>
+                <td>
+                    {{ item['value'] }}
+                </td>
+            </tr>
+        {%endfor%}
+    </table>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+.links {
+  float: right;
+  text-align: right;
+  width: 100%; }
+
+form {
+  text-align: center; }
+
+.query, .constraint {
+  width: 50%;
+  border-radius: 15px;
+  padding: 5px 5px 5px 25px;
+  margin: 10px; }
+
+.constraint {
+  width: 30%;
+  border-radius: 0px; }
+
+.prompt {
+  width: 15%;
+  white-space: nowrap;
+  display: inline-block; }

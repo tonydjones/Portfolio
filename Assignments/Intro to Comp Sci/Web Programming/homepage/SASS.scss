@@ -1,0 +1,64 @@
+$color: black;
+
+div{
+    table{
+        border: 3px solid $color;
+        text-align: center;
+        margin: auto;
+    }
+
+    td, th{
+        text-align: center;
+        border: 1px solid $color;
+        margin: 5px;
+        padding: 5px;
+    }
+}
+
+.subtitle-base{
+    float: left;
+    height: auto;
+    text-align : center;
+
+}
+
+.subtitle
+{
+    @extend .subtitle-base;
+    font-size: 60px;
+    width: 30%;
+    margin-left: 50px;
+}
+
+.subtitle2
+{
+    @extend .subtitle-base;
+    font-size: 20px;
+    width: 15%;
+    margin-left: 15px;
+    margin-top: 15px;
+}
+
+.skill-base{
+    height: auto;
+    float : right;
+    text-align : center;
+}
+
+.skills2
+{
+    @extend .skill-base;
+    font-size: 20px;
+    width: 15%;
+    margin-right: 15px;
+    margin-top: 15px;
+}
+
+.skills
+{
+    @extend .skill-base;
+    font-size: 40px;
+    width: 30%;
+    margin-right: 50px;
+}
+
