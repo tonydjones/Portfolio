@@ -1,0 +1,73 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% if user.is_authenticated and item.buyer.username == user.username and not item.active %}
+
+        <h2>Congratulations! You won the auction!</h2>
+
+    {% elif not item.active %}
+    <h2>This auction has been closed</h2>
+    {% endif %}
+
+        <h3>{{ title }}</h3>
+        {% if image %}
+            <img src={{image}} height="200px">
+        {% endif %}
+        <h4> ${{ price }}</h4>
+        <p>{{description}}</p>
+
+        {% if user.is_authenticated and item.active %}
+
+            <form action="{% url 'item' item.id %}" method="post">
+            {% csrf_token %}
+            
+            {% if item in watching %}
+                <input type="hidden" name="toggle" value="remove">
+                <input class="btn btn-primary" type="submit" value="Remove From Watchlist">
+            {% else %}
+                <input type="hidden" name="toggle" value="add">
+                <input class="btn btn-primary" type="submit" value="Add To Watchlist">
+            {% endif %}
+            </form>
+
+            <form action="{% url 'item' item.id %}" method="post">
+                {% csrf_token %}
+                <input type="number" step=".01" name="bid" min={{min_bid}} required>
+                <input class="btn btn-primary" type="submit" value="Make Bid">
+            </form>
+
+            {% if item.owner.username == user.username and item.active %}
+
+            <form action="{% url 'item' item.id %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="close" value="close">
+                <input class="btn btn-primary" type="submit" value="Close Auction">
+            </form>
+
+            {% endif %}
+
+
+            <form action="{% url 'item' item.id %}" method="post">
+                {% csrf_token %}
+                <input class="form-control" type="text" name="comment" placeholder="Write A Comment" required>
+                <input class="btn btn-primary" type="submit" value="Add Your Comment">
+            </form>
+
+
+        {% endif %}
+
+        {% if item.active %}
+        {% for comment in comments %}
+        
+        <p>{{comment.commenter}}: {{comment.text}}</p>
+    
+        {% endfor %}
+        {% endif %}
+
+        
+
+
+
+
+{% endblock %}
