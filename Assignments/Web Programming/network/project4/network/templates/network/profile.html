@@ -1,0 +1,65 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+<h4 id="followers"> {{profile.username}} has {{followers}} followers</h4>
+<h4> {{profile.username}} is following {{following}} users</h4>
+
+{% if user.is_authenticated and user.username != profile.username %}
+    <button class="btn btn-sm btn-outline-primary" id="follow" onclick="follow()">Follow</button>
+{% endif %}
+
+{% if user.is_authenticated and user.username == profile.username %}
+<form action="{% url 'profile' profile.username %}" method="POST">
+    {% csrf_token %}
+        <textarea class="form-control" name="new_post" placeholder="Write a post..." required></textarea>
+        <input type="submit" class="btn btn-primary"/>
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+    <script>
+
+        var username = "{{profile.username}}";
+
+        var user_following = "{{user_following}}";
+
+        var followers = "{{followers}}";
+
+        if (user_following === 'True') {
+            user_following = true;
+            document.querySelector('#follow').innerHTML = 'Unfollow';
+        }
+        else {
+            user_following = false;
+        }
+        
+        function load_posts() {
+            document.querySelector('#posts').innerHTML = '';
+            
+            fetch(`/posts/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                var posts = data[0];
+                var liked = data[1];
+                var finish = 10;
+                if (finish >= posts.length) {
+                    finish = posts.length;
+                    document.querySelector('#next').disabled = true;
+                }
+                for (i = 0; i < finish; i++) {
+                generate_div(posts[i], liked[i]);
+                }
+                for (i = 0; i < posts.length; i++) {
+                public_posts[public_posts.length] = posts[i];
+                }
+            
+            })
+                
+            .catch(error => {
+            console.log('Error:', error);
+            });
+        }
+    </script>
+{% endblock script %}
