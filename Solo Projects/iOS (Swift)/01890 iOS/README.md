@@ -6,3 +6,7 @@ the app (who are relatively tech illiterate) could easily just alter the CSV fil
 They can also add new images and categories for information, all by altering the CSV files, no coding necessary. Most of the contact 
 information is also interactive, ie clicking on a url will direct the phone to open the website, and the same with phone numbers, 
 text lines, and e-mail addresses. There is also a search function which allows a user to search for the information they want from the app.
+
+https://apps.apple.com/us/app/01890/id1520137304?ign-mpt=uo%3D2
+
+https://www.youtube.com/watch?v=cXw5Mth4yMs
