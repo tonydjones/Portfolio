@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/2XBvPglYons
+
 Objectives
 Read and understand all of the Legend of Zelda source code from Lecture 5.
 Implement hearts that sometimes drop from enemies at random, which will heal the player for a full heart when picked up (consumed).
