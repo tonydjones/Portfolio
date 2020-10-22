@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/QzSKIC6NU2A
+
 Complete the implementations of the Sentence class and the MinesweeperAI class in minesweeper.py.
 
 In the Sentence class, complete the implementations of known_mines, known_safes, mark_mine, and mark_safe.
