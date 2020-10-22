@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/XIerNLn5IXI
+
 Objectives
 Read and understand all of the Dreadhalls source code from Lecture 9.
 Spawn holes in the floor of the maze that the player can fall through (but not too many; just three or four per maze is probably sufficient, depending on maze size).
