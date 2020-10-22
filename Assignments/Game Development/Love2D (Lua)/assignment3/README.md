@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/DdVWVrG3UCU
+
 Objectives
 Read and understand all of the Match-3 source code from Lecture 3.
 Implement time addition on matches, such that scoring a match extends the timer by 1 second per tile in a match.
