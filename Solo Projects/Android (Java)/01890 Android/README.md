@@ -8,5 +8,11 @@ information is also interactive, ie clicking on a url will direct the phone to o
 text lines, and e-mail addresses. There is also a search function which allows a user to search for the information they want from the app.
 
 https://winchestercoalitionsafercommunity.com/anonymous-text-tip-line/
+
 https://apps.apple.com/us/app/01890/id1520137304?ign-mpt=uo%3D2
+
 https://play.google.com/store/apps/details?id=com.townofwinchester.a01890
+
+https://www.youtube.com/watch?v=cXw5Mth4yMs
+
+https://www.youtube.com/watch?v=UYKTpRfzzg4
