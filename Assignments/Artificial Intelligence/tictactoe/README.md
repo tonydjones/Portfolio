@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/UeOLcE2h52U
+
 Using Minimax, implement an AI to play Tic-Tac-Toe optimally.
 
 Tic-Tac-Toe Game
