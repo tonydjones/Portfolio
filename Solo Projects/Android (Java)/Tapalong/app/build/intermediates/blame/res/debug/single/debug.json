@@ -1,0 +1,98 @@
+[
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_taps.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_taps.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\drawable-v24_ic_launcher_foreground.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\drawable-v24\\ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_main.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_record.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_record.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_song_view.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\song_view.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\drawable_ic_launcher_background.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\drawable\\ic_launcher_background.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-hdpi_ic_launcher.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_results.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_results.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_tap_view.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\tap_view.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_play.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_play.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-anydpi-v26\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-mdpi_ic_launcher.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_choice.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_choice.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_difficulty.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_difficulty.xml"
+    },
+    {
+        "merged": "D:\\Coding\\Android\\Tapalong\\app\\build\\intermediates\\res\\merged\\debug\\layout_activity_song.xml.flat",
+        "source": "D:\\Coding\\Android\\Tapalong\\app\\src\\main\\res\\layout\\activity_song.xml"
+    }
+]

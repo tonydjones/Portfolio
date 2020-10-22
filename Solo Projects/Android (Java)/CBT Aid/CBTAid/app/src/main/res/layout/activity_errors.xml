@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FF000000"
+        android:id="@+id/belief">
+    </TextView>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/errorlist"
+            android:orientation="vertical">
+
+        <TextView
+            android:textColor="#FF000000"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Evaluate this thought carefully. Does this thought have any cognitive errors in it?">
+        </TextView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/overgeneralization"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Overgeneralization"
+                android:gravity="center"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/filter"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:gravity="center"
+                android:textColor="#FF000000"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Mental Filter"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/personalization"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Personalization"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/conclusions"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Jumping To Conclusions"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/mindreading"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Mind Reading"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/fortune"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Fortune Telling"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/catastrophizing"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Catastrophizing"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/allornone"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="All Or None Thinking"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/emotionalreasoning"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Emotional Reasoning"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/should"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Should Statements"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/emotionallabeling"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Emotional Labeling"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/minmax"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:textColor="#FF000000"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:layout_weight="4"
+                android:text="Minimization/Magnification"
+                android:clickable="true"
+                android:onClick="highlight"
+                android:focusable="true">
+
+            </TextView>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="..."
+                android:onClick="details">
+
+            </Button>
+
+        </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Next"
+        android:onClick="next"
+        android:layout_gravity="bottom">
+    </Button>
+
+</LinearLayout>
