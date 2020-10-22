@@ -9,10 +9,6 @@ text lines, and e-mail addresses. There is also a search function which allows a
 
 https://winchestercoalitionsafercommunity.com/anonymous-text-tip-line/
 
-https://apps.apple.com/us/app/01890/id1520137304?ign-mpt=uo%3D2
-
 https://play.google.com/store/apps/details?id=com.townofwinchester.a01890
-
-https://www.youtube.com/watch?v=cXw5Mth4yMs
 
 https://www.youtube.com/watch?v=UYKTpRfzzg4
