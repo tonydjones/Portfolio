@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/0HUOwkLZtqM
+
 Specification
 Using JavaScript, HTML, and CSS, complete the implementation of your single-page-app email client. You must fulfill the following requirements:
 
