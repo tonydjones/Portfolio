@@ -1,8 +1,6 @@
 Hey!
 
-I'm Tony Jones. Thanks for the class! Great experience, hope the next ones are just as good.
-
-I currently work as a mental health counselor, so I wanted my project to be related to my work. So I made a therapy app.
+I currently work as a mental health counselor, so I wanted this project to be related to my work. So I made a therapy app.
 
 My project is called CBT Aid, an Android app intended to make Cognitive behavioral therapy quick, easy, and readily accessible.
 
@@ -34,8 +32,4 @@ the user can readily access without losing their progress. It's meant for conven
 
 but I'm far more proud of the app's functionality than I would be of its appearance. And frankly that's all that really matters, because I made it for myself.
 
-Check out the video here: https://www.youtube.com/watch?v=xiDR9uAickQ&feature=youtu.be
-
-Thanks again, guys! See you in the business someday, hopefully.
-
--Tony
+Check out the video here: https://youtu.be/xiDR9uAickQ
