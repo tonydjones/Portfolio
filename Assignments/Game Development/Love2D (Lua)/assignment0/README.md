@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/txZh-3fPPDg
+
 Your first assignment in the course will be a fairly easy one, since the dive into game programming can be deep enough as it is without having to implement an entire code base from scratch! Instead, we’ll take the Pong example we covered in class and extend it in a small but fun way by giving one of the paddles (or perhaps both) logic for playing the game so that you don’t always need a buddy to play the game with you! We’ll approach problem sets in the course this way generally, taking the full code bases we’ve used in lecture and extending them so that you’ll get plenty of experience interacting with fully implemented games. You can even use these projects as templates and jumping boards for your own games!
 
 Of course, the code won’t run if you don’t have LÖVE2D installed, so we’ll have to tackle that in addition to grabbing the code; the course uses version 0.10.2 for its source code, so do just choose the appropriate distribution of that version for your system here:
