@@ -9,3 +9,5 @@ The primary loop of the app involves recording when a client enters the program 
 recording changes in the prescriptions, keeping count of the number of doses of controlled medications such as suboxone and xanax, recording when prescriptions are discontinued, and 
 recording when the client leaves the program. In addition, the app is able to generate spreadsheets of all the data or subsets of the data, edit the records, delete records, and has 
 optional password protection with certain functions locked behind an administrator password.
+
+https://youtu.be/de9JYqnCAxw
