@@ -1,5 +1,7 @@
 # tonydjones
 
+https://youtu.be/onAHWD1cEow
+
 I call this project "Writers' Resources." I'm a writer, and when I was working on publishing my first novel, I struggled a lot to find 
 the resources I needed to get the job done. A part of me wished that there was a centralized portal where I could find all the resources 
 I needed, including agents to represent my work, editors to read through it, and publishers to publish it. Many professionals in the 
