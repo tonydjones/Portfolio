@@ -1,0 +1,817 @@
+{% extends "website/layout.html" %}
+
+{% block body %}
+
+{% if not user.is_authenticated or user.username != target.username %}
+
+{% if user.is_authenticated and not connected %}
+
+{% if received %}
+<input class="btn btn-primary" onclick="accept_request('{{target.username}}', 'request_button')" id="request_button" value="Accept Request">
+
+{% else %}
+<input class="btn btn-primary" onclick="send_request()" id="request_button" value="Connect">
+{% endif %}
+
+{% endif %}
+
+{% if user.is_authenticated and connected %}
+<input class="btn btn-primary" disabled id="request_button" value="Connected">
+{% endif %}
+
+<h4>
+    Pen Name: {{target.pen_name}}
+</h4>
+{% if target.author %}
+<h4>
+    I'm an author
+</h4>
+<h5>
+    My preferred genres to write:
+</h5>
+<ul>
+{% if target.author_fantasy %}
+<li>Fantasy</li>
+{% endif %}
+{% if target.author_scifi %}
+<li>Science Fiction</li>
+{% endif %}
+{% if target.author_historical %}
+<li>Historical Fiction</li>
+{% endif %}
+{% if target.author_bio %}
+<li>Biography</li>
+{% endif %}
+{% if target.author_realistic %}
+<li>Realistic Fiction</li>
+{% endif %}
+{% if target.author_children %}
+<li>Children's Fiction</li>
+{% endif %}
+{% if target.author_young %}
+<li>Young Adult Books</li>
+{% endif %}
+{% if target.author_adult %}
+<li>Adult Books</li>
+{% endif %}
+{% if target.author_spiritual %}
+<li>Religious/Spiritual</li>
+{% endif %}
+{% if target.author_help %}
+<li>Self-Help</li>
+{% endif %}
+{% if target.author_short %}
+<li>Short Stories</li>
+{% endif %}
+{% if target.author_novel %}
+<li>Novels</li>
+{% endif %}
+{% if target.author_poetry %}
+<li>Poetry</li>
+{% endif %}
+{% if target.author_comic %}
+<li>Comics</li>
+{% endif %}
+</ul>
+
+<h5 id="author_declaration"></h5>
+<ul id="author_titles"></ul>
+{% endif %}
+
+{% if target.editor %}
+<h4>
+    I'm an editor
+</h4>
+<h5>
+    My preferred genres to edit:
+</h5>
+<ul>
+    {% if target.editor_fantasy %}
+    <li>Fantasy</li>
+    {% endif %}
+    {% if target.editor_scifi %}
+    <li>Science Fiction</li>
+    {% endif %}
+    {% if target.editor_historical %}
+    <li>Historical Fiction</li>
+    {% endif %}
+    {% if target.editor_bio %}
+    <li>Biography</li>
+    {% endif %}
+    {% if target.editor_realistic %}
+    <li>Realistic Fiction</li>
+    {% endif %}
+    {% if target.editor_children %}
+    <li>Children's Fiction</li>
+    {% endif %}
+    {% if target.editor_young %}
+    <li>Young Adult Books</li>
+    {% endif %}
+    {% if target.editor_adult %}
+    <li>Adult Books</li>
+    {% endif %}
+    {% if target.editor_spiritual %}
+    <li>Religious/Spiritual</li>
+    {% endif %}
+    {% if target.editor_help %}
+    <li>Self-Help</li>
+    {% endif %}
+    {% if target.editor_short %}
+    <li>Short Stories</li>
+    {% endif %}
+    {% if target.editor_novel %}
+    <li>Novels</li>
+    {% endif %}
+    {% if target.editor_poetry %}
+    <li>Poetry</li>
+    {% endif %}
+    {% if target.editor_comic %}
+    <li>Comics</li>
+    {% endif %}
+</ul>
+
+<h5 id="editor_declaration"></h5>
+<ul id="editor_titles"></ul>
+{% endif %}
+
+{% if target.agent %}
+<h4>
+    I'm an agent
+</h4>
+<h5>
+    My preferred genres to represent:
+</h5>
+<ul>
+    {% if target.agent_fantasy %}
+    <li>Fantasy</li>
+    {% endif %}
+    {% if target.agent_scifi %}
+    <li>Science Fiction</li>
+    {% endif %}
+    {% if target.agent_historical %}
+    <li>Historical Fiction</li>
+    {% endif %}
+    {% if target.agent_bio %}
+    <li>Biography</li>
+    {% endif %}
+    {% if target.agent_realistic %}
+    <li>Realistic Fiction</li>
+    {% endif %}
+    {% if target.agent_children %}
+    <li>Children's Fiction</li>
+    {% endif %}
+    {% if target.agent_young %}
+    <li>Young Adult Books</li>
+    {% endif %}
+    {% if target.agent_adult %}
+    <li>Adult Books</li>
+    {% endif %}
+    {% if target.agent_spiritual %}
+    <li>Religious/Spiritual</li>
+    {% endif %}
+    {% if target.agent_help %}
+    <li>Self-Help</li>
+    {% endif %}
+    {% if target.agent_short %}
+    <li>Short Stories</li>
+    {% endif %}
+    {% if target.agent_novel %}
+    <li>Novels</li>
+    {% endif %}
+    {% if target.agent_poetry %}
+    <li>Poetry</li>
+    {% endif %}
+    {% if target.agent_comic %}
+    <li>Comics</li>
+    {% endif %}
+</ul>
+
+<h5 id="agent_declaration"></h5>
+<ul id="agent_titles"></ul>
+{% endif %}
+
+{% if target.publisher %}
+<h4>
+    I'm a publisher
+</h4>
+<h5>
+    My preferred genres to publish:
+</h5>
+<ul>
+    {% if target.publisher_fantasy %}
+    <li>Fantasy</li>
+    {% endif %}
+    {% if target.publisher_scifi %}
+    <li>Science Fiction</li>
+    {% endif %}
+    {% if target.publisher_historical %}
+    <li>Historical Fiction</li>
+    {% endif %}
+    {% if target.publisher_bio %}
+    <li>Biography</li>
+    {% endif %}
+    {% if target.publisher_realistic %}
+    <li>Realistic Fiction</li>
+    {% endif %}
+    {% if target.publisher_children %}
+    <li>Children's Fiction</li>
+    {% endif %}
+    {% if target.publisher_young %}
+    <li>Young Adult Books</li>
+    {% endif %}
+    {% if target.publisher_adult %}
+    <li>Adult Books</li>
+    {% endif %}
+    {% if target.publisher_spiritual %}
+    <li>Religious/Spiritual</li>
+    {% endif %}
+    {% if target.publisher_help %}
+    <li>Self-Help</li>
+    {% endif %}
+    {% if target.publisher_short %}
+    <li>Short Stories</li>
+    {% endif %}
+    {% if target.publisher_novel %}
+    <li>Novels</li>
+    {% endif %}
+    {% if target.publisher_poetry %}
+    <li>Poetry</li>
+    {% endif %}
+    {% if target.publisher_comic %}
+    <li>Comics</li>
+    {% endif %}
+</ul>
+
+<h5 id="publisher_declaration"></h5>
+<ul id="publisher_titles"></ul>
+<br>
+{% endif %}
+
+{% if target.proofreader %}
+<h4>
+    I'm a proofreader
+</h4>
+<h5 id="proofreader_declaration"></h5>
+<ul id="proofreader_titles"></ul>
+{% endif %}
+
+<h4>My Profile Summary:</h4>
+<h6>{{target.summary}}</h6>
+
+{% else %}
+<h2>Profile Settings</h2>
+<form action="{% url 'index' %}" method = "GET">
+    {% csrf_token %}
+    <div class="form-group">
+        Pen Name: 
+        <input class="form-control" autofocus type="text" name="pen_name" id="pen_name" value="{{user.pen_name}}">
+    </div>
+    What services do you offer?
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="author" id="writer" onclick="reveal('author')"/>
+        <span>I'm an author</span>
+    </div>
+    <div class="form-group hide" id="author">
+        <span>My Published Written Works:</span><br>
+        <input class="btn btn-primary" onclick="add('published_works', 'add_titles', 'published_titles')" value="Add A Title">
+        <div id="published_titles">
+        </div>
+        <span> My preferred styles to write are: </span><br>
+        <input type="checkbox" class="filled-in author" name="author_fantasy"/>
+        <span>Fantasy</span><br>
+        <input type="checkbox" class="filled-in author" name="author_scifi"/>
+        <span>Science Fiction</span><br>
+        <input type="checkbox" class="filled-in author" name="author_historical"/>
+        <span>Historical Fiction</span><br>
+        <input type="checkbox" class="filled-in author" name="author_bio"/>
+        <span>Biography</span><br>
+        <input type="checkbox" class="filled-in author" name="author_realistic"/>
+        <span>Realistic Fiction</span><br>
+        <input type="checkbox" class="filled-in author" name="author_children"/>
+        <span>Children's Books</span><br>
+        <input type="checkbox" class="filled-in author" name="author_young"/>
+        <span>Young Adult Books</span><br>
+        <input type="checkbox" class="filled-in author" name="author_adult"/>
+        <span>Adult Books</span><br>
+        <input type="checkbox" class="filled-in author" name="author_spiritual"/>
+        <span>Religious/Spiritual</span><br>
+        <input type="checkbox" class="filled-in author" name="author_help"/>
+        <span>Self-Help</span><br>
+        <input type="checkbox" class="filled-in author" name="author_short"/>
+        <span>Short Stories</span><br>
+        <input type="checkbox" class="filled-in author" name="author_novel"/>
+        <span>Novels</span><br>
+        <input type="checkbox" class="filled-in author" name="author_poetry"/>
+        <span>Poetry</span><br>
+        <input type="checkbox" class="filled-in author" name="author_comic"/>
+        <span>Comics</span><br>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="editor" onclick="reveal('editor')"/>
+        <span>I'm an editor</span>
+    </div>
+    <div class="form-group hide" id="editor">
+        <span>My Published Edited Works:</span><br>
+        <input class="btn btn-primary" onclick="add('published_edited_works', 'add_edited_titles', 'published_edited_titles')" value="Add A Title">
+        <div id="published_edited_titles">
+        </div>
+        <span> My preferred styles to edit are: </span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_fantasy"/>
+        <span>Fantasy</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_scifi"/>
+        <span>Science Fiction</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_historical"/>
+        <span>Historical Fiction</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_bio"/>
+        <span>Biography</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_realistic"/>
+        <span>Realistic Fiction</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_children"/>
+        <span>Children's Books</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_young"/>
+        <span>Young Adult Books</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_adult"/>
+        <span>Adult Books</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_spiritual"/>
+        <span>Religious/Spiritual</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_help"/>
+        <span>Self-Help</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_short"/>
+        <span>Short Stories</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_novel"/>
+        <span>Novels</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_poetry"/>
+        <span>Poetry</span><br>
+        <input type="checkbox" class="filled-in editor" name="editor_comic"/>
+        <span>Comics</span><br>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="agent" onclick="reveal('agent')"/>
+        <span>I'm an agent</span>
+    </div>
+    <div class="form-group hide" id="agent">
+        <span>My Published Represented Works:</span><br>
+        <input class="btn btn-primary" onclick="add('published_agent_works', 'add_agent_titles', 'published_agent_titles')" value="Add A Title">
+        <div id="published_agent_titles">
+        </div>
+        <span> My preferred styles to represent are: </span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_fantasy"/>
+        <span>Fantasy</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_scifi"/>
+        <span>Science Fiction</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_historical"/>
+        <span>Historical Fiction</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_bio"/>
+        <span>Biography</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_realistic"/>
+        <span>Realistic Fiction</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_children"/>
+        <span>Children's Books</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_young"/>
+        <span>Young Adult Books</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_adult"/>
+        <span>Adult Books</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_spiritual"/>
+        <span>Religious/Spiritual</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_help"/>
+        <span>Self-Help</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_short"/>
+        <span>Short Stories</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_novel"/>
+        <span>Novels</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_poetry"/>
+        <span>Poetry</span><br>
+        <input type="checkbox" class="filled-in agent" name="agent_comic"/>
+        <span>Comics</span><br>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="publisher" onclick="reveal('publisher')"/>
+        <span>I'm a publisher</span>
+    </div>
+    <div class="form-group hide" id="publisher">
+        <span>Works I Have Published:</span><br>
+        <input class="btn btn-primary" onclick="add('published_publisher_works', 'add_publisher_titles', 'published_publisher_titles')" value="Add A Title">
+        <div id="published_publisher_titles">
+        </div>
+        <span> My preferred styles to publish are: </span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_fantasy"/>
+        <span>Fantasy</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_scifi"/>
+        <span>Science Fiction</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_historical"/>
+        <span>Historical Fiction</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_bio"/>
+        <span>Biography</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_realistic"/>
+        <span>Realistic Fiction</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_children"/>
+        <span>Children's Books</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_young"/>
+        <span>Young Adult Books</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_adult"/>
+        <span>Adult Books</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_spiritual"/>
+        <span>Religious/Spiritual</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_help"/>
+        <span>Self-Help</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_short"/>
+        <span>Short Stories</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_novel"/>
+        <span>Novels</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_poetry"/>
+        <span>Poetry</span><br>
+        <input type="checkbox" class="filled-in publisher" name="publisher_comic"/>
+        <span>Comics</span><br>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="proofreader" onclick="reveal('proofreader')"/>
+        <span>I'm a proofreader</span>
+    </div>
+    <div class="form-group hide" id="proofreader">
+        <span>My Published Proofread Works:</span><br>
+        <input class="btn btn-primary" onclick="add('published_proofread_works', 'add_proofread_titles', 'published_proofread_titles')" value="Add A Title">
+        <div id="published_proofread_titles">
+        </div>
+    </div>
+    My Profile Summary: <textarea class="form-control" name="summary">{{user.summary}}</textarea>
+    <input class="btn btn-primary" onclick="update_profile()" type="submit" value="Update My Profile">
+</form>
+{% endif %}
+{% endblock %}
+
+{% block script %}
+<script>
+if ("{{user.username}}" === "{{target.username}}"){
+    document.addEventListener('DOMContentLoaded', function() {
+
+    var username = "{{user.username}}"
+    if ("{{user.author}}" === "True"){
+        document.getElementsByName("author")[0].dispatchEvent(new MouseEvent("click"));
+
+        if ("{{user.author_fantasy}}" === "True"){
+            document.getElementsByName("author_fantasy")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_scifi}}" === "True"){
+            document.getElementsByName("author_scifi")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_historical}}" === "True"){
+            document.getElementsByName("author_historical")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_bio}}" === "True"){
+            document.getElementsByName("author_bio")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_realistic}}" === "True"){
+            document.getElementsByName("author_realistic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_children}}" === "True"){
+            document.getElementsByName("author_children")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_young}}" === "True"){
+            document.getElementsByName("author_young")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_adult}}" === "True"){
+            document.getElementsByName("author_adult")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_spiritual}}" === "True"){
+            document.getElementsByName("author_spiritual")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_help}}" === "True"){
+            document.getElementsByName("author_help")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_short}}" === "True"){
+            document.getElementsByName("author_short")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_novel}}" === "True"){
+            document.getElementsByName("author_novel")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_poetry}}" === "True"){
+            document.getElementsByName("author_poetry")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.author_comic}}" === "True"){
+            document.getElementsByName("author_comic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+
+        fetch(`/get_works/${username}/author`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add(null, null, `published_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+
+    if ("{{user.editor}}" === "True"){
+        document.getElementsByName("editor")[0].dispatchEvent(new MouseEvent("click"));
+
+        if ("{{user.editor_fantasy}}" === "True"){
+            document.getElementsByName("editor_fantasy")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_scifi}}" === "True"){
+            document.getElementsByName("editor_scifi")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_historical}}" === "True"){
+            document.getElementsByName("editor_historical")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_bio}}" === "True"){
+            document.getElementsByName("editor_bio")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_realistic}}" === "True"){
+            document.getElementsByName("editor_realistic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_children}}" === "True"){
+            document.getElementsByName("editor_children")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_young}}" === "True"){
+            document.getElementsByName("editor_young")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_adult}}" === "True"){
+            document.getElementsByName("editor_adult")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_spiritual}}" === "True"){
+            document.getElementsByName("editor_spiritual")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_help}}" === "True"){
+            document.getElementsByName("editor_help")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_short}}" === "True"){
+            document.getElementsByName("editor_short")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_novel}}" === "True"){
+            document.getElementsByName("editor_novel")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_poetry}}" === "True"){
+            document.getElementsByName("editor_poetry")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.editor_comic}}" === "True"){
+            document.getElementsByName("editor_comic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+
+        fetch(`/get_works/${username}/editor`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add(null, null, `published_edited_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+
+    if ("{{user.agent}}" === "True"){
+        document.getElementsByName("agent")[0].dispatchEvent(new MouseEvent("click"));
+
+        if ("{{user.agent_fantasy}}" === "True"){
+            document.getElementsByName("agent_fantasy")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_scifi}}" === "True"){
+            document.getElementsByName("agent_scifi")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_historical}}" === "True"){
+            document.getElementsByName("agent_historical")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_bio}}" === "True"){
+            document.getElementsByName("agent_bio")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_realistic}}" === "True"){
+            document.getElementsByName("agent_realistic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_children}}" === "True"){
+            document.getElementsByName("agent_children")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_young}}" === "True"){
+            document.getElementsByName("agent_young")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_adult}}" === "True"){
+            document.getElementsByName("agent_adult")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_spiritual}}" === "True"){
+            document.getElementsByName("agent_spiritual")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agentagent_help}}" === "True"){
+            document.getElementsByName("agent_help")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_short}}" === "True"){
+            document.getElementsByName("agent_short")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_novel}}" === "True"){
+            document.getElementsByName("agent_novel")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_poetry}}" === "True"){
+            document.getElementsByName("agent_poetry")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.agent_comic}}" === "True"){
+            document.getElementsByName("agent_comic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        fetch(`/get_works/${username}/agent`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add(null, null, `published_agent_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+
+    if ("{{user.publisher}}" === "True"){
+        document.getElementsByName("publisher")[0].dispatchEvent(new MouseEvent("click"));
+
+        if ("{{user.publisher_fantasy}}" === "True"){
+            document.getElementsByName("publisher_fantasy")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_scifi}}" === "True"){
+            document.getElementsByName("publisher_scifi")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_historical}}" === "True"){
+            document.getElementsByName("publisher_historical")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_bio}}" === "True"){
+            document.getElementsByName("publisher_bio")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_realistic}}" === "True"){
+            document.getElementsByName("publisher_realistic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_children}}" === "True"){
+            document.getElementsByName("publisher_children")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_young}}" === "True"){
+            document.getElementsByName("publisher_young")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_adult}}" === "True"){
+            document.getElementsByName("publisher_adult")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_spiritual}}" === "True"){
+            document.getElementsByName("publisher_spiritual")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_help}}" === "True"){
+            document.getElementsByName("publisher_help")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_short}}" === "True"){
+            document.getElementsByName("publisher_short")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_novel}}" === "True"){
+            document.getElementsByName("publisher_novel")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_poetry}}" === "True"){
+            document.getElementsByName("publisher_poetry")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        if ("{{user.publisher_comic}}" === "True"){
+            document.getElementsByName("publisher_comic")[0].dispatchEvent(new MouseEvent("click"));
+        }
+        fetch(`/get_works/${username}/publisher`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add(null, null, `published_publisher_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+
+    if ("{{user.proofreader}}" === "True"){
+        document.getElementsByName("proofreader")[0].dispatchEvent(new MouseEvent("click"));
+        fetch(`/get_works/${username}/proofreader`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add(null, null, `published_proofread_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+});
+}
+else {
+
+    function send_request(){
+        var user = "{{user.username}}";
+        var target = "{{target.username}}";
+        var button = document.getElementById("request_button")
+        button.value = "Request Sent";
+        button.disabled = true;
+
+        fetch(`/send_request/${target}`)
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+
+    if ("{{requested}}" == "True"){
+        var user = "{{user.username}}";
+        var target = "{{target.username}}";
+        var button = document.getElementById("request_button")
+        button.value = "Request Sent";
+        button.disabled = true;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var username = "{{target.username}}";
+        if ("{{target.proofreader}}" === "True"){
+            var username = "{{target.username}}";
+        fetch(`/get_works/${username}/proofreader`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                if (data.length > 0){
+                    var div = document.getElementById(`proofreader_declaration`);
+                    div.innerHTML = "My Published Proofread Works: ";
+                }
+                for (i=0; i < data.length; i++){
+                    add_title(`proofreader_titles`, data[i]);
+                }          
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{target.author}}" === "True"){
+        var username = "{{target.username}}";
+        fetch(`/get_works/${username}/author`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                if (data.length > 0){
+                    var div = document.getElementById(`author_declaration`);
+                    div.innerHTML = "My Published Written Works: ";
+                }
+                for (i=0; i < data.length; i++){
+                    add_title(`author_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    });
+    if ("{{target.editor}}" === "True"){
+        var username = "{{target.username}}";
+        fetch(`/get_works/${username}/editor`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                if (data.length > 0){
+                    var div = document.getElementById(`editor_declaration`);
+                    div.innerHTML = "My Published Edited Works: ";
+                }
+                for (i=0; i < data.length; i++){
+                    add_title(`editor_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{target.agent}}" === "True"){
+        var username = "{{target.username}}";
+        fetch(`/get_works/${username}/agent`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                if (data.length > 0){
+                    var div = document.getElementById(`agent_declaration`);
+                    div.innerHTML = "My Published Represented Works: ";
+                }
+                for (i=0; i < data.length; i++){
+                    add_title(`agent_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{target.publisher}}" === "True"){
+        var username = "{{target.username}}";
+        fetch(`/get_works/${username}/publisher`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                if (data.length > 0){
+                    var div = document.getElementById(`publisher_declaration`);
+                    div.innerHTML = "Works I Have Published: ";
+                }
+                for (i=0; i < data.length; i++){
+                    add_title(`publisher_titles`, data[i]);
+                }            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+}
+
+</script>
+{% endblock %}

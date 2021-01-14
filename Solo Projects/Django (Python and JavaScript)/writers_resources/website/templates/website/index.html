@@ -1,0 +1,309 @@
+{% extends "website/layout.html" %}
+
+{% block body %}
+    <h4>Most Popular Professionals</h4>
+    <table>
+        <tr>
+            <th>Author</th>
+            <th>Editor</th>
+            <th>Agent</th>
+            <th>Publisher</th>
+            <th>Proofreader</th>
+        </tr>
+
+        <tr>
+            <td>
+                {% if pop_author %}
+                <a class="nav-link" href="{% url 'profile' pop_author.username %}">{{pop_author.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pop_editor %}
+                <a class="nav-link" href="{% url 'profile' pop_editor.username %}">{{pop_editor.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pop_agent %}
+                <a class="nav-link" href="{% url 'profile' pop_agent.username %}">{{pop_agent.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pop_publisher %}
+                <a class="nav-link" href="{% url 'profile' pop_publisher.username %}">{{pop_publisher.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pop_proofreader %}
+                <a class="nav-link" href="{% url 'profile' pop_proofreader.username %}">{{pop_proofreader.pen_name}}</a>
+                {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td id="pop_auth_title"></td>
+            <td id="pop_edit_title"></td>
+            <td id="pop_agent_title"></td>
+            <td id="pop_pub_title"></td>
+            <td id="pop_proof_title"></td>
+        </tr>
+
+    </table>
+<br>
+    <h4>Newest Professionals</h4>
+    <table>
+
+        <tr>
+            <th>Author</th>
+            <th>Editor</th>
+            <th>Agent</th>
+            <th>Publisher</th>
+            <th>Proofreader</th>
+        </tr>
+
+        <tr>
+            <td>
+                {% if new_author %}
+                <a class="nav-link" href="{% url 'profile' new_author.username %}">{{new_author.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if new_editor %}
+                <a class="nav-link" href="{% url 'profile' new_editor.username %}">{{new_editor.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if new_agent %}
+                <a class="nav-link" href="{% url 'profile' new_agent.username %}">{{new_agent.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if new_publisher %}
+                <a class="nav-link" href="{% url 'profile' new_publisher.username %}">{{new_publisher.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if new_proofreader %}
+                <a class="nav-link" href="{% url 'profile' new_proofreader.username %}">{{new_proofreader.pen_name}}</a>
+                {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td id="new_auth_title"></td>
+            <td id="new_edit_title"></td>
+            <td id="new_agent_title"></td>
+            <td id="new_pub_title"></td>
+            <td id="new_proof_title"></td>
+        </tr>
+        
+    </table>
+    <br>
+    <h4>Most Prolific Professionals</h4>
+    <table>
+
+        <tr>
+            <th>Author</th>
+            <th>Editor</th>
+            <th>Agent</th>
+            <th>Publisher</th>
+            <th>Proofreader</th>
+        </tr>
+
+        <tr>
+            <td>
+                {% if pro_author %}
+                <a class="nav-link" href="{% url 'profile' pro_author.username %}">{{pro_author.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pro_editor %}
+                <a class="nav-link" href="{% url 'profile' pro_editor.username %}">{{pro_editor.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pro_agent %}
+                <a class="nav-link" href="{% url 'profile' pro_agent.username %}">{{pro_agent.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pro_publisher %}
+                <a class="nav-link" href="{% url 'profile' pro_publisher.username %}">{{pro_publisher.pen_name}}</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if pro_proofreader %}
+                <a class="nav-link" href="{% url 'profile' pro_proofreader.username %}">{{pro_proofreader.pen_name}}</a>
+                {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td><ul id="pro_auth_title"></ul></td>
+            <td><ul id="pro_edit_title"></ul></td>
+            <td><ul id="pro_agent_title"></ul></td>
+            <td><ul id="pro_pub_title"></ul></td>
+            <td><ul id="pro_proof_title"></ul></td>
+        </tr>
+        
+    </table>
+{% endblock %}
+
+{% block script %}
+<script>
+    if ("{{pop_author}}" !== "None"){
+        var username = "{{pop_author.connections_count}}"
+        var div = document.getElementById(`pop_auth_title`);
+        div.innerHTML = username + " Connections";
+    }
+    if ("{{pop_editor}}" !== "None"){
+        var username = "{{pop_editor.connections_count}}"
+        var div = document.getElementById(`pop_edit_title`);
+        div.innerHTML = username + " Connections";
+    }
+    if ("{{pop_agent}}" !== "None"){
+        var username = "{{pop_agent.connections_count}}"
+        var div = document.getElementById(`pop_agent_title`);
+        div.innerHTML = username + " Connections";
+    }
+    if ("{{pop_publisher}}" !== "None"){
+        var username = "{{pop_publisher.connections_count}}"
+        var div = document.getElementById(`pop_pub_title`);
+        div.innerHTML = username + " Connections";
+    }
+    if ("{{pop_proofreader}}" !== "None"){
+        var username = "{{pop_proofreader.connections_count}}"
+        var div = document.getElementById(`pop_proof_title`);
+        div.innerHTML = username + " Connections";
+    }
+    if ("{{pro_author}}" !== "None"){
+        var username = "{{pro_author.username}}"
+        fetch(`/get_works/${username}/author`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add_title(`pro_auth_title`, data[i]);
+                }             
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{pro_editor}}" !== "None"){
+        var username = "{{pro_editor.username}}"
+        fetch(`/get_works/${username}/editor`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add_title(`pro_edit_title`, data[i]);
+                }             
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{pro_agent}}" !== "None"){
+        var username = "{{pro_agent.username}}"
+        fetch(`/get_works/${username}/agent`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add_title(`pro_agent_title`, data[i]);
+                }             
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{pro_publisher}}" !== "None"){
+        var username = "{{pro_publisher.username}}"
+        fetch(`/get_works/${username}/publisher`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add_title(`pro_pub_title`, data[i]);
+                }             
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{pro_proofreader}}" !== "None"){
+        var username = "{{pro_proofreader.username}}"
+        fetch(`/get_works/${username}/proofreader`)
+            .then(response => response.json())
+            .then(data => {
+                var i;
+                for (i=0; i < data.length; i++){
+                    add_title(`pro_proof_title`, data[i]);
+                }             
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{new_author}}" !== "None"){
+        var username = "{{new_author.username}}"
+        fetch(`/get_time/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                var div = document.getElementById(`new_auth_title`);
+                div.innerHTML = "Joined on " + data["timestamp"];            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{new_editor}}" !== "None"){
+        var username = "{{new_editor.username}}"
+        fetch(`/get_time/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                var div = document.getElementById(`new_edit_title`);
+                div.innerHTML = "Joined on " + data["timestamp"];            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{new_agent}}" !== "None"){
+        var username = "{{new_agent.username}}"
+        fetch(`/get_time/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                var div = document.getElementById(`new_agent_title`);
+                div.innerHTML = "Joined on " + data["timestamp"];            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{new_publisher}}" !== "None"){
+        var username = "{{new_publisher.username}}"
+        fetch(`/get_time/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                var div = document.getElementById(`new_pub_title`);
+                div.innerHTML = "Joined on: " + data["timestamp"];            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+    if ("{{new_proofreader}}" !== "None"){
+        var username = "{{new_proofreader.username}}"
+        fetch(`/get_time/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                var div = document.getElementById(`new_proof_title`);
+                div.innerHTML = "Joined on " + data["timestamp"];            
+            })
+            .catch(error => {
+            console.log('Error:', error);
+            });
+    }
+</script>
+{% endblock %}

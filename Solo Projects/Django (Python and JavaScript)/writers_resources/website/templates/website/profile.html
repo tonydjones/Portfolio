@@ -1,0 +1,124 @@
+{% extends "website/layout.html" %}
+
+{% block body %}
+
+{% if user.is_authenticated %}
+
+{% if find_connections %}
+<h3>Received Requests</h3>
+{% endif %}
+
+<table id="member_table">
+    <tr>
+        <th>User</th>
+        <th>Author</th>
+        <th>Editor</th>
+        <th>Agent</th>
+        <th>Publisher</th>
+        <th>Proofreader</th>
+        {% if pending_requests or find_connections %}
+        <th>Connection Request</th>
+        {% endif %}
+    </tr>
+
+    {% for connection in users %}
+
+    <tr>
+        <td><a class="nav-link" href="{% url 'profile' connection.username %}">{{connection.pen_name}}</a></td>
+        {% if connection.author %}
+        <td>{{connection.author_count}} written titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.editor %}
+        <td>{{connection.editor_count}} edited titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.agent %}
+        <td>{{connection.agent_count}} represented titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.publisher %}
+        <td>{{connection.publisher_count}} published titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.proofreader %}
+        <td>{{connection.proofreader_count}} proofread titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if pending_requests %}
+        <td><input class="btn btn-primary" onclick="send_request_direct('{{connection.username}}')" id="{{connection.username}}_button" value="Connect"></td>
+        {% endif %}
+        {% if find_connections %}
+        <td><input class="btn btn-primary" onclick="accept_request('{{connection.username}}', '{{connection.username}}_button')" id="{{connection.username}}_button" value="Accept"></td>
+        {% endif %}
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% if find_connections %}
+<br>
+<h3>Sent Requests</h3>
+
+<table>
+    <tr>
+        <th>User</th>
+        <th>Author</th>
+        <th>Editor</th>
+        <th>Agent</th>
+        <th>Publisher</th>
+        <th>Proofreader</th>
+        <th>Connection Request</th>
+    </tr>
+
+    {% for connection in sent_users %}
+
+    <tr>
+        <td><a class="nav-link" href="{% url 'profile' connection.username %}">{{connection.pen_name}}</a></td>
+        {% if connection.author %}
+        <td>{{connection.author_count}} written titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.editor %}
+        <td>{{connection.editor_count}} edited titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.agent %}
+        <td>{{connection.agent_count}} represented titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.publisher %}
+        <td>{{connection.publisher_count}} published titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if connection.proofreader %}
+        <td>{{connection.proofreader_count}} proofread titles</td>
+        {% else %}
+        <td>X</td>
+        {% endif %}
+        {% if find_connections %}
+        <td><input class="btn btn-primary" disabled value="Request Sent"></td>
+        {% endif %}
+        {% endfor %}
+{% endif %}
+
+{% else %}
+
+<div>You must have an account to use this feature. <a href="{% url 'register' %}">Register here.</a></div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+{% endblock script %}

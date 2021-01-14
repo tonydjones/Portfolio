@@ -1,0 +1,19 @@
+.hide {
+    display: none;
+}
+
+td, th { 
+    padding: 15px;
+    border-left: 1px solid #000;
+    text-align: center;
+}
+
+th { 
+    border-bottom: 1px solid #000;
+}
+
+table { 
+    border-collapse: collapse;
+}
+
+td:last-child, th:last-child { border-right: 1px solid #000;}
