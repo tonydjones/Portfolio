@@ -1,0 +1,62 @@
+{% extends "med_management/layout.html" %}
+
+{% block body %}
+
+<h2>User Settings</h2>
+
+{% if not user.is_authenticated %}
+
+<h4>You must have an account and be logged in to adjust your settings</h4>
+
+Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+
+Already have an account? <a href="{% url 'index' %}">Log In here.</a>
+
+{% else %}
+<form action="{% url 'index' %}" method = "GET">
+    {% csrf_token %}
+    <div class="form-group">
+        Display Name: 
+        <input class="form-control" autofocus type="text" name="name" value="{{user.name}}">
+    </div>
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="patient"/>
+        <span>I'm a patient</span>
+    </div>
+    
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="doctor"/>
+        <span>I'm a doctor</span>
+    </div>
+    <div class="form-group">
+        <input type="checkbox" class="filled-in" name="pharmacy"/>
+        <span>I represent a pharmacy</span>
+    </div>
+    <input class="btn btn-primary" onclick="update_settings()" type="submit" value="Save My Settings">
+</form>
+{% endif %}
+{% endblock %}
+
+{% block script %}
+<script>
+
+if ("{{user.is_authenticated}}" === "True"){
+    document.addEventListener('DOMContentLoaded', function() {
+
+    if ("{{user.patient}}" === "True"){
+        document.getElementsByName("patient")[0].dispatchEvent(new MouseEvent("click"));
+    }
+
+    if ("{{user.doctor}}" === "True"){
+        document.getElementsByName("doctor")[0].dispatchEvent(new MouseEvent("click"));
+    }
+
+    if ("{{user.pharmacy}}" === "True"){
+        document.getElementsByName("pharmacy")[0].dispatchEvent(new MouseEvent("click"));
+    }
+
+});
+}
+
+</script>
+{% endblock %}

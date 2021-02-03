@@ -1,0 +1,50 @@
+{% extends "med_management/layout.html" %}
+
+{% block body %}
+
+{% if not user.is_authenticated %}
+
+<h4>You must have an account and be logged in to manage refills and pickups</h4>
+
+Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+
+Already have an account? <a href="{% url 'index' %}">Log In here.</a>
+
+{% elif not user.pharmacy %}
+
+<h4>You must be registered as a representative of a pharmacy in order to manage refills and pickups</h4>
+
+{% else %}
+
+{% csrf_token %}
+
+{% if requests %}
+
+<h4>Refill Requests</h4>
+
+{% for request in requests %}
+
+<div class="row" id="request_{{request.id}}">
+    <div class="col-md-auto">
+        {{request.summary}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="prepare_refill('{{request.id}}')"><span>Confirm Refill</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reject_general('{{request.id}}')"><span>Reject Refill</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% endif %}
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock script %}

@@ -1,0 +1,110 @@
+{% extends "med_management/layout.html" %}
+
+{% block body %}
+
+{% if not user.is_authenticated %}
+
+<h4>You must have an account and be logged in to manage your connections</h4>
+
+Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+
+Already have an account? <a href="{% url 'index' %}">Log In here.</a>
+
+{% else %}
+
+{% csrf_token %}
+
+{% if type == "dr" %}
+
+{% if user.doctor %}
+
+{% if pt %}
+
+<h4>Current Patients</h4>
+
+{% for patient in pt %}
+
+<div class="row" id="{{patient.username}}">
+    <div class="col-md-auto">
+        {{patient.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" href="{% url 'meds' patient.username %}"><span>Manage Medications</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="disconnect('pt', '{{patient.username}}')"><span>Disconnect</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% endif %}
+
+{% else %}
+
+<h4>You must be registered as a doctor in order to manage patient connections. <a href="{% url 'settings' %}">Adjust your settings here.</a></h4>
+
+{% endif %}
+
+{% endif %}
+
+{% if type == "pt" %}
+
+{% if user.patient %}
+
+{% if dr %}
+
+<h4>Current Doctors</h4>
+
+{% for doctor in dr %}
+
+<div class="row" id="{{doctor.username}}">
+    <div class="col-md-auto">
+        {{doctor.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="disconnect('dr', '{{doctor.username}}')"><span>Disconnect</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% endif %}
+
+{% if ph %}
+
+<h4>Current Pharmacies</h4>
+
+{% for pharm in ph %}
+
+<div class="row" id="{{pharm.username}}">
+    <div class="col-md-auto">
+        {{pharm.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="disconnect('ph', '{{pharm.username}}')"><span>Disconnect</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% endif %}
+
+{% else %}
+
+<h4>You must be registered as a doctor in order to manage patient connections. <a href="{% url 'settings' %}">Adjust your settings here.</a></h4>
+
+{% endif %}
+
+{% endif %}
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock script %}

@@ -1,0 +1,295 @@
+{% extends "med_management/layout.html" %}
+
+{% block body %}
+
+{% if error %}
+
+{% if error == "login" %}
+
+<h4>You must have an account and be logged in to view medications</h4>
+
+Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+
+Already have an account? <a href="{% url 'index' %}">Log In here.</a>
+
+{% elif error == "not_a_patient" %}
+
+<h4>This person is not a patient, you cannot view their medications</h4>
+
+{% elif error == "pharmacy" %}
+
+<h4>Pharmacies do not have permission to view patient medications</h4>
+
+{% elif error == "not_my_patient" %}
+
+<h4>This is not one of your patients, you cannot view their medication information</h4>
+
+{% elif error == "not_me" %}
+
+<h4>This is not you and you are not this patient's doctor, you cannot view their medication information</h4>
+
+{% elif error == "permission" %}
+
+<h4>You do not have permission to view this patient's medication information</h4>
+
+{% endif %}
+
+{% elif rel == "dr-pt" %}
+
+{% csrf_token %}
+
+<h4>{{target.name}}</h4>
+<br>
+{% if pharmacies %}
+<a class="btn btn-primary" onclick="reveal('new_prescription')"><span>Prescribe New Medication</span></a>
+
+<p id="confirmation_message"></p>
+
+{% else %}
+You cannot prescribe new medications for this patient until they connect with at least one pharmacy so you can send the pickup request to the pharmacy.
+{% endif %}
+
+<div class="hide" id="new_prescription">
+        <input class="form-control" autofocus type="text" id="medication" size="25" placeholder="Medication">
+        <input class="form-control" autofocus type="text" id="dose" size="25" placeholder="Dose">
+        <input class="form-control" autofocus type="text" id="directions" size="50" placeholder="Directions">
+        <input class="form-control" autofocus type="number" min="0" id="count" placeholder="Count">
+        <label for="pharmacies">Choose a pharmacy:</label>
+        <select name="pharmacies" id="pharmacies">
+            {% for pharm in pharmacies %}
+            <option value="{{pharm.username}}">{{pharm.name}}</option>
+            {% endfor %}
+        </select>
+        <a class="btn btn-primary" onclick="prescribe('new_prescription', '{{target.username}}')"><span>Prescribe</span></a>
+        <a class="btn btn-secondary" onclick="hide('new_prescription')"><span>Cancel</span></a>
+</div>
+<br>
+
+{% for prescription in prescriptions %}
+
+<div class="row" id="prescription_{{prescription.id}}">
+    <div class="col-md-auto">
+        {{prescription.medication}} {{prescription.dose}} 
+    </div>
+
+    {% if prescription.count != None %}
+    <div class="col-md-auto">
+        {{prescription.count}} doses remaining
+    </div>
+    {% endif %}
+
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reveal('prescription_{{prescription.id}}_history');hide('prescription_{{prescription.id}}_adjust');hide('prescription_{{prescription.id}}_refill')"><span>Review History</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reveal('prescription_{{prescription.id}}_adjust');hide('prescription_{{prescription.id}}_history');hide('prescription_{{prescription.id}}_refill')"><span>Adjust Prescription</span></a>
+    </div>
+    {% if pharmacies %}
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reveal('prescription_{{prescription.id}}_refill');hide('prescription_{{prescription.id}}_history');hide('prescription_{{prescription.id}}_adjust')"><span>Refill Medication</span></a>
+    </div>
+    {% endif %}
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="discontinue('{{prescription.id}}')"><span>Discontinue Medication</span></a>
+    </div>
+</div>
+<br>
+
+<div class="hide" id="prescription_{{prescription.id}}_history">
+    <a class="btn btn-secondary" onclick="hide('prescription_{{prescription.id}}_history')"><span>Hide History</span></a>
+<table id="history_{{prescription.id}}">
+    <tr id="headers">
+        <th>Date/Time</th>
+        <th>Action</th>
+        <th>Starting Count</th>
+        <th>Change</th>
+        <th>New Count</th>
+    </tr>
+
+</table>
+</div>
+<br class="hide">
+
+<div class="hide row" id="prescription_{{prescription.id}}_adjust">
+    <div class="col-md-auto">
+        <input class="form-control" autofocus type="text" id="directions_{{prescription.id}}" size="50" value="{{prescription.directions}}">
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="save('{{prescription.id}}')"><span>Save Updates</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-secondary" onclick="hide('prescription_{{prescription.id}}_adjust')"><span>Cancel</span></a>
+    </div>
+</div>
+<br class="hide">
+
+<div class="hide row" id="prescription_{{prescription.id}}_refill">
+    <div class="col-md-auto">
+        <input class="form-control" autofocus type="number" min="0" id="refill_{{prescription.id}}" size="50">
+    </div>
+    <div class="col-md-auto">
+        <label for="pharmacies">Choose a pharmacy:</label>
+        <select name="pharmacies" id="pharmacies_{{prescription.id}}">
+            {% for pharm in pharmacies %}
+            <option value="{{pharm.username}}">{{pharm.name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="request_refill('{{prescription.id}}')"><span>Request Refill</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-secondary" onclick="hide('prescription_{{prescription.id}}_refill')"><span>Cancel</span></a>
+    </div>
+</div>
+<br class="hide">
+
+{% endfor %}
+
+{% elif rel == "pt-self" %}
+
+{% csrf_token %}
+
+<h4>{{target.name}}</h4>
+<br>
+
+{% if not doctors or not pharmacies %}
+Note: You cannot request refills without being connected to at least one doctor and one pharmacy.
+<br>
+{% endif %}
+
+{% for prescription in prescriptions %}
+
+<div class="row" id="prescription_{{prescription.id}}">
+    <div class="col-md-auto">
+        {{prescription.medication}} {{prescription.dose}} 
+    </div>
+
+    {% if prescription.count != None %}
+    <div class="col-md-auto" id="remaining_{{prescription.id}}">
+        {{prescription.count}} doses remaining
+    </div>
+    {% endif %}
+
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reveal('prescription_{{prescription.id}}_history');hide('prescription_{{prescription.id}}_refill');hide('prescription_{{prescription.id}}_take')"><span>Review History</span></a>
+    </div>
+    {% if pharmacies and doctors %}
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reveal('prescription_{{prescription.id}}_refill');hide('prescription_{{prescription.id}}_history');hide('prescription_{{prescription.id}}_take')"><span>Request Refill</span></a>
+    </div>
+    {% endif %}
+    {% if prescription.count == None or prescription.count > 0 %}
+    <div class="col-md-auto">
+        <a class="btn btn-primary" id="take_{{prescription.id}}_button" onclick="reveal('prescription_{{prescription.id}}_take');hide('prescription_{{prescription.id}}_history');hide('prescription_{{prescription.id}}_refill')"><span>Take Medication</span></a>
+    </div>
+    {% endif %}
+</div>
+<br>
+
+<div class="hide" id="prescription_{{prescription.id}}_history">
+    <a class="btn btn-secondary" onclick="hide('prescription_{{prescription.id}}_history')"><span>Hide History</span></a>
+<table id="history_{{prescription.id}}">
+    <tr id="headers">
+        <th>Date/Time</th>
+        <th>Action</th>
+        <th>Starting Count</th>
+        <th>Change</th>
+        <th>New Count</th>
+    </tr>
+
+</table>
+</div>
+<br class="hide">
+
+<div class="hide row" id="prescription_{{prescription.id}}_take">
+    <div class="col-md-auto">
+        {{prescription.directions}}
+    </div>
+    <div class="col-md-auto">
+        <input class="form-control" autofocus type="number" min="0" id="take_{{prescription.id}}" placeholder="Doses">
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="take('{{prescription.id}}')"><span>Take Meds</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-secondary" onclick="hide('prescription_{{prescription.id}}_take')"><span>Cancel</span></a>
+    </div>
+</div>
+<br class="hide">
+
+<div class="hide row" id="prescription_{{prescription.id}}_refill">
+    <div class="col-md-auto">
+        <input class="form-control" autofocus type="number" min="0" id="refill_{{prescription.id}}" size="50">
+    </div>
+    <div class="col-md-auto">
+        <label for="doctors">Choose a doctor:</label>
+        <select name="doctors" id="doctors_{{prescription.id}}">
+            {% for dr in doctors %}
+            <option value="{{dr.username}}">{{dr.name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-auto">
+        <label for="pharmacies">Choose a pharmacy:</label>
+        <select name="pharmacies" id="pharmacies_{{prescription.id}}">
+            {% for pharm in pharmacies %}
+            <option value="{{pharm.username}}">{{pharm.name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="ask_dr_for_refill('{{prescription.id}}')"><span>Request Refill</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-secondary" onclick="hide('prescription_{{prescription.id}}_refill')"><span>Cancel</span></a>
+    </div>
+</div>
+<br class="hide">
+{% endfor %}
+{% endif %}
+
+
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var patient = "{{target.username}}"
+        fetch(`/get_history/${patient}`)
+        .then(response => response.json())
+        .then(results => {
+
+            for (key in results){
+                var table = document.getElementById(`history_${key}`);
+                for (i = 0; i < results[key].length; i++){
+                    var element = document.createElement("tr");
+                    var entry = results[key][i]
+
+                    var date = document.createElement("td");
+                    var action = document.createElement("td");
+                    var start = document.createElement("td");
+                    var change = document.createElement("td");
+                    var end = document.createElement("td");
+
+                    date.innerHTML = entry["timestamp"]
+                    action.innerHTML = entry["action"]
+                    start.innerHTML = entry["start"]
+                    change.innerHTML = entry["change"]
+                    end.innerHTML = entry["end"]
+
+                    table.appendChild(element);
+                    element.appendChild(date)
+                    element.appendChild(action)
+                    element.appendChild(start)
+                    element.appendChild(change)
+                    element.appendChild(end)
+                }
+            }
+      });
+});
+</script>
+
+{% endblock script %}

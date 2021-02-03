@@ -1,0 +1,176 @@
+{% extends "med_management/layout.html" %}
+
+{% block body %}
+
+{% csrf_token %}
+
+{% if user.patient %}
+
+<h4>Patient Options</h4>
+
+<div class="row">
+    <div class="col-md-auto">
+        <a class="btn btn-primary" href="{% url 'meds' user.username %}">Manage Medications</a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" href="{% url 'find_doc' %}">Connect To Doctors</a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" href="{% url 'find_pharm' %}">Connect To Pharmacies</a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" href="{% url 'pt_connections' %}">Manage Connections</a>
+    </div>
+</div>
+<br>
+
+{% if requests %}
+
+<h5>Prescriptions Ready For Pickup</h5>
+
+{% for request in requests %}
+
+<div class="row" id="request_{{request.id}}">
+    <div class="col-md-auto">
+        {{request.summary}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="confirm_refill('{{request.id}}')"><span>Confirm Pickup</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% else %}
+
+You have no prescriptions ready for pickup
+
+{% endif %}
+
+{% endif %}
+
+{% if user.doctor %}
+
+<h4>Doctor Options</h4>
+
+<div class="row">
+    <div class="col-md-auto">
+        <a class="btn btn-primary" href="{% url 'dr_connections' %}">Manage Patients</a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" href="{% url 'find_pt' %}">Connect To Patients</a>
+    </div>
+</div>
+<br>
+
+{% if dr_requests %}
+
+<h5>Refill Requests</h5>
+
+{% for request in dr_requests %}
+
+<div class="row" id="request_{{request.id}}">
+    <div class="col-md-auto">
+        {{request.summary}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="request_default('{{request.id}}')"><span>Confirm Refill</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reveal('request_{{request.id}}_details')"><span>Adjust Details</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reject_general('{{request.id}}')"><span>Reject Refill</span></a>
+    </div>
+</div>
+<br>
+
+<div class="hide row" id="request_{{request.id}}_details">
+    <div class="col-md-auto">
+        <input class="form-control" autofocus type="number" min="0" id="refill_{{request.id}}" size="50" value="{{request.amount}}">
+    </div>
+    <div class="col-md-auto">
+        <label for="pharmacies">Choose a pharmacy:</label>
+        <select name="pharmacies" id="pharmacies_{{request.id}}">
+        </select>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="request_adjusted_refill('{{request.id}}')"><span>Request Refill</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-secondary" onclick="hide('request_{{request.id}}_details')"><span>Cancel</span></a>
+    </div>
+</div>
+<br class="hide">
+
+{% endfor %}
+
+{% else %}
+
+None of your patients are currently requesting refills
+
+{% endif %}
+
+{% endif %}
+
+{% if user.pharmacy %}
+
+<h4>Pharmacy Options</h4>
+
+{% if ph_requests %}
+
+<h5>Refill Requests</h5>
+
+{% for request in ph_requests %}
+
+<div class="row" id="request_{{request.id}}">
+    <div class="col-md-auto">
+        {{request.summary}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="prepare_refill('{{request.id}}')"><span>Confirm Refill</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reject_general('{{request.id}}')"><span>Reject Refill</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% else %}
+
+There are currently no pending refill requests for your pharmacy to fill
+
+{% endif %}
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var doctor = "{{user.username}}"
+        fetch(`/get_dr_requests/${doctor}`)
+        .then(response => response.json())
+        .then(results => {
+
+            for (key in results){
+                var selector = document.getElementById(`pharmacies_${key}`);
+                for (i = 0; i < results[key].length; i++){
+                    var element = document.createElement("option");
+                    element.value = results[key][i][0];
+                    element.innerHTML = results[key][i][1];
+
+                    selector.appendChild(element);
+                }
+            }
+      });
+});
+</script>
+
+{% endblock script %}
+    

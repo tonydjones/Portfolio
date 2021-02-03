@@ -1,0 +1,198 @@
+{% extends "med_management/layout.html" %}
+
+{% block body %}
+
+{% if not user.is_authenticated %}
+
+<h4>You must have an account and be logged in to make connections</h4>
+
+Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+
+Already have an account? <a href="{% url 'index' %}">Log In here.</a>
+
+{% else %}
+
+{% csrf_token %}
+
+{% if type == "dr" %}
+
+{% if user.patient %}
+
+{% if requests %}
+
+<h4>Pending Connection Requests</h4>
+
+{% for dr in requests %}
+
+<div class="row" id="{{dr.username}}">
+    <div class="col-md-auto">
+        {{dr.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="connect('dr', '{{dr.username}}')"><span>Accept Connection</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reject('dr', '{{dr.username}}')"><span>Reject Connection</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% endif %}
+
+<h4>Search For A Doctor</h4>
+
+<div class="row">
+<div class="col-md-auto">
+    <input class="form-control" autofocus type="text" id="search_terms" size="50" placeholder="Search Doctor By Name or Username">
+</div>
+<div class="col-md-auto">
+    <input class="btn btn-primary" onclick="update_search('dr')" value="Search" readonly>
+</div>
+</div>
+
+<br>
+
+<div id="results">
+
+{% for dr in all %}
+
+<div class="row" id="{{dr.username}}">
+    <div class="col-md-auto">
+        {{dr.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary"  onclick="request('dr_connect', '{{dr.username}}')"><span>Request Connection</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<h4>You must be registered as a patient in order to connect to doctors. <a href="{% url 'settings' %}">Adjust your settings here.</a></h4>
+
+{% endif %}
+
+{% endif %}
+
+{% if type == "pharm" %}
+
+{% if user.patient %}
+
+<h4>Search For A Pharmacy</h4>
+
+<div class="row">
+<div class="col-md-auto">
+    <input class="form-control" autofocus type="text" id="search_terms" size="50" placeholder="Search Pharmacy By Name or Username">
+</div>
+<div class="col-md-auto">
+    <input class="btn btn-primary" onclick="update_search('ph')" value="Search" readonly>
+</div>
+</div>
+
+<br>
+
+<div id="results">
+
+{% for pharm in all %}
+
+<div class="row" id="{{pharm.username}}">
+    <div class="col-md-auto">
+        {{pharm.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="connect('ph', '{{pharm.username}}')"><span>Make This One Of My Pharmacies</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<h4>You must be registered as a patient in order to connect to pharmacies. <a href="{% url 'settings' %}">Adjust your settings here.</a></h4>
+
+{% endif %}
+
+{% endif %}
+
+{% if type == "pt" %}
+
+{% if user.doctor %}
+
+{% if requests %}
+
+<h4>Pending Connection Requests</h4>
+
+{% for pt in requests %}
+
+<div class="row" id="{{pt.username}}">
+    <div class="col-md-auto">
+        {{pt.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="connect('pt', '{{pt.username}}')"><span>Accept Connection</span></a>
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="reject('pt', '{{pt.username}}')"><span>Reject Connection</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+{% endif %}
+
+<h4>Search For A Patient</h4>
+
+<div class="row">
+<div class="col-md-auto">
+    <input class="form-control" autofocus type="text" id="search_terms" size="50" placeholder="Search Patient By Name or Username">
+</div>
+<div class="col-md-auto">
+    <input class="btn btn-primary" onclick="update_search('pt')" value="Search" readonly>
+</div>
+</div>
+
+<br>
+
+<div id="results">
+
+{% for pt in all %}
+
+<div class="row" id="{{pt.username}}">
+    <div class="col-md-auto">
+        {{pt.name}}
+    </div>
+    <div class="col-md-auto">
+        <a class="btn btn-primary" onclick="request('pt_connect', '{{pt.username}}')"><span>Request Connection</span></a>
+    </div>
+</div>
+<br>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<h4>You must be registered as a doctor in order to connect to patients. <a href="{% url 'settings' %}">Adjust your settings here.</a></h4>
+
+{% endif %}
+
+{% endif %}
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock script %}
