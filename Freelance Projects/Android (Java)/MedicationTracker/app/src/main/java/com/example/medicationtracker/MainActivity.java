@@ -70,6 +70,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.net.Inet4Address;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -171,12 +172,8 @@ public class MainActivity extends AppCompatActivity {
         client_map.put("active", "BOOLEAN");
         client_map.put("discharge", "BIGINT");
         client_map.put("edits", "TINYINT");
-        clients_db = new DatabaseHelper(getApplicationContext(),
-                "clients",
-                "clients",
-                client_map);
-
-        code = "secretcode102694";
+        client_map.put("class", "TINYTEXT");
+        client_map.put("password", "TINYTEXT");
 
         Map<String, String> prescriptions_map = new HashMap<>();
         prescriptions_map.put("client_id", "INT");
@@ -210,10 +207,19 @@ public class MainActivity extends AppCompatActivity {
         entries_map.put("edits", "TINYINT");
         entries_map.put("method", "TINYTEXT");
         entries_map.put("client_signature", "LONGTEXT");
+        entries_map.put("staff_1", "TINYINT");
         entries_map.put("staff_signature_1", "LONGTEXT");
+        entries_map.put("staff_2", "TINYINT");
         entries_map.put("staff_signature_2", "LONGTEXT");
+        entries_map.put("staff_present", "TINYTEXT");
         entries_map.put("notes", "LONGTEXT");
 
+        clients_db = new DatabaseHelper(getApplicationContext(),
+                "clients",
+                "clients",
+                client_map);
+
+        code = "secretcode102694";
 
         prescriptions_db = new DatabaseHelper(getApplicationContext(),
                 "prescriptions",
@@ -225,260 +231,20 @@ public class MainActivity extends AppCompatActivity {
                 "entries",
                 entries_map);
 
-        update();
-
-        home();
-    }
-
-    public void update(){
-
-        List<String> columnNames = clients_db.get_column_names();
-
-        if (!columnNames.contains("edits")){
-            SQLiteDatabase clients = clients_db.getWritableDatabase();
-            clients.execSQL("ALTER TABLE clients ADD COLUMN edits TINYINT");
-            clients.close();
+        if (admin_password == null){
+            setup();
         }
-
-        List<Map<String, Object>> client_data = clients_db.getRows(null, null, null, false);
-        for (int i = 0; i < client_data.size(); i++){
-            if (client_data.get(i).get("edits") == null){
-                client_data.get(i).put("edits", 0);
-                clients_db.update(client_data.get(i), new String[]{"id=" + client_data.get(i).get("id")});
-            }
+        else{
+            home();
         }
-
-        columnNames = prescriptions_db.get_column_names();
-
-        if (!columnNames.contains("edits")){
-            SQLiteDatabase clients = prescriptions_db.getWritableDatabase();
-            clients.execSQL("ALTER TABLE prescriptions ADD COLUMN edits TINYINT");
-            clients.close();
-        }
-
-        List<Map<String, Object>> prescription_data = prescriptions_db.getRows(null, null, null, false);
-        for (int i = 0; i < prescription_data.size(); i++){
-            if (prescription_data.get(i).get("edits") == null){
-                prescription_data.get(i).put("edits", 0);
-                prescriptions_db.update(prescription_data.get(i), new String[]{"id=" + prescription_data.get(i).get("id")});
-            }
-        }
-
-        columnNames = entries_db.get_column_names();
-
-        if (!columnNames.contains("old_count")){
-            SQLiteDatabase clients = entries_db.getWritableDatabase();
-            clients.execSQL("ALTER TABLE entries ADD COLUMN old_count FLOAT");
-            clients.close();
-        }
-
-        if (!columnNames.contains("new_count")){
-            SQLiteDatabase clients = entries_db.getWritableDatabase();
-            clients.execSQL("ALTER TABLE entries ADD COLUMN new_count FLOAT");
-            clients.close();
-        }
-
-        if (columnNames.contains("count") && !columnNames.contains("change")){
-            SQLiteDatabase clients = entries_db.getWritableDatabase();
-            clients.execSQL("ALTER TABLE entries ADD COLUMN change FLOAT");
-            clients.execSQL("UPDATE entries SET change = count");
-            clients.close();
-
-            List<Map<String, Object>> entries = entries_db.getRows(new String[]{"count", "change", "method", "drug", "id"}, null, null, false);
-            boolean match = true;
-
-            for (int i = 0; i < entries.size(); i++){
-                Log.wtf(gson.toJson(entries.get(i).get("count")), gson.toJson(entries.get(i).get("change")));
-                if (entries.get(i).get("count") == null && entries.get(i).get("change") == null){
-                    continue;
-                }
-                else if (entries.get(i).get("count") == null && entries.get(i).get("change") != null){
-                    match = false;
-                    break;
-                }
-                else if (entries.get(i).get("count") != null && entries.get(i).get("change") == null){
-                    match = false;
-                    break;
-                }
-                else if ((float)entries.get(i).get("count") != (float)entries.get(i).get("change")){
-                    if (entries.get(i).get("method").equals("COUNT") || !entries.get(i).get("method").equals("MISCOUNT")){
-                        Log.wtf(gson.toJson(entries.get(i).get("method")), gson.toJson(entries.get(i).get("drug")));
-                        Map<String, Object> entry = new HashMap<>();
-                        entry.put("count", entries.get(i).get("change"));
-                        entries_db.update(entry, new String[]{"id="+entries.get(i).get("id")});
-                    }
-                    else{
-                        match = false;
-                        break;
-                    }
-                }
-            }
-            if (match){
-                Toast.makeText(getApplicationContext(), "it matches!",
-                        Toast.LENGTH_LONG).show();
-            }
-            else {
-                Toast.makeText(getApplicationContext(), "it doesn't match!",
-                        Toast.LENGTH_LONG).show();
-            }
-
-            for (int i = 0; i < prescription_data.size(); i++){
-                Map<String,Object> prescription = prescription_data.get(i);
-                if ((int)prescription.get("controlled") == 1){
-                    List<Map<String, Object>> entries_data = entries_db.getRows(null, new String[]{"prescription_id="+prescription.get("id")},
-                            new String[]{"datetime", "ASC"}, false);
-                    Float count = (float)0;
-                    for (int j = 0; j < entries_data.size(); j++){
-                        Map<String,Object> entry = entries_data.get(j);
-                        if (entry.get("old_count") == null || entry.get("new_count") == null || entry.get("change") == null){
-                            if (entry.get("method").equals("TOOK MEDS")){
-                                entry.put("old_count", count);
-                                count -= (float)entry.get("change");
-                                entry.put("new_count", count);
-                            }
-                            else if (entry.get("method").equals("REFILL")){
-                                entry.put("old_count", count);
-                                count += (float)entry.get("change");
-                                entry.put("new_count", count);
-                            }
-                            else if (entry.get("method").equals("INTAKE") || entry.get("method").equals("PRESCRIPTION STARTED") ||
-                                    entry.get("method").equals("UPDATED PRESCRIPTION STARTED")){
-                                if (entry.get("change") == null){
-                                    break;
-                                }
-                                entry.put("old_count", 0);
-                                entry.put("new_count", entry.get("change"));
-                                count = (float) entry.get("change");
-                            }
-                            else if (entry.get("method").equals("COUNT")){
-                                entry.put("old_count", count);
-                                entry.put("new_count", count);
-                                entry.put("change", 0);
-                            }
-                            else if (entry.get("method").equals("MISCOUNT")){
-                                entry.put("old_count", count);
-                                entry.put("new_count", entry.get("change"));
-                                Float temp = (float) entry.get("change");
-                                entry.put("change", (float)entry.get("change") - count);
-                                count = temp;
-                            }
-                            else{
-                                entry.put("old_count", entry.get("change"));
-                                entry.put("change", null);
-                                entry.put("new_count", null);
-                            }
-                            entries_db.update(entry, new String[]{"id=" + entry.get("id")});
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     public void test(){
-
-       // wipe("Test Page", this::test);
-
-        Workbook workbook = new HSSFWorkbook();
-
-        List<Map<String, Object>> client_data = clients_db.getRows(null, null, new String[]{"name", "ASC", "admit", "ASC"}, false);
-
-        Sheet clients = client_sheet(workbook, "Clients", client_data);
-
-        String previous_client = "";
-        int client_counter = 1;
-
-        for (int i = 0; i < client_data.size(); i++){
-            List<Map<String, Object>> prescription_data = prescriptions_db.getRows(null,
-                    new String[]{"client_id="+client_data.get(i).get("id")},
-                    new String[]{"name", "ASC", "start", "DESC"}, false);
-
-            String sheet_name = client_data.get(i).get("name") + " Prescriptions";
-
-            if (sheet_name.equals(previous_client)){
-                sheet_name += " (" + client_counter + ")";
-                client_counter++;
-            }
-            else {
-                previous_client = sheet_name;
-                client_counter = 1;
-            }
-
-            Sheet prescriptions = prescription_sheet(workbook,
-                    sheet_name, prescription_data, "12/01/20", "12/1020");
-
-            String previous_prescription = "";
-            int prescription_counter = 1;
-
-            for (int j = 0; j < prescription_data.size(); j++){
-                List<Map<String, Object>> entry_data = entries_db.getRows(null,
-                        new String[]{"prescription_id="+prescription_data.get(j).get("id")},
-                        new String[]{"datetime", "ASC"}, false);
-
-                Map<String, Object> prescription = prescription_data.get(j);
-
-                String entry_sheet_name = client_data.get(i).get("name") + " " + prescription.get("name");
-
-                if (entry_sheet_name.equals(previous_prescription)){
-                    entry_sheet_name += " (" + prescription_counter + ")";
-                    prescription_counter++;
-                }
-                else {
-                    previous_prescription = entry_sheet_name;
-                    prescription_counter = 1;
-                }
-
-                Sheet entries = entry_sheet(workbook, entry_sheet_name, entry_data);
-            }
-        }
-
-        save_xls(workbook, "Testing");
-
+        wipe("Test Page", this::test);
     }
 
     public void test2(){
-        wipe("Test Page", this::test2);
-
-        String text = "";
-
-        for (int i = 1; i < 6; i++) {
-            text += "\nTest Line " + i;
-        }
-
-        TextView info = new TextView(this);
-        info.setText(text.substring(1));
-        scroll_child.addView(info);
-
-        final SignatureView signature = create_signature_view();
-
-        final Button confirm = new Button(this);
-        confirm.setText("Client Signoff");
-        confirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signature.ClearCanvas();
-            }
-        });
-
-        final Button clear = new Button(this);
-        clear.setText("Clear Canvas");
-        clear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signature.ClearCanvas();
-            }
-        });
-
-        LinearLayout buttons = new LinearLayout(this);
-        buttons.setOrientation(LinearLayout.HORIZONTAL);
-        buttons.addView(clear);
-        buttons.addView(confirm);
-        confirm.setLayoutParams(weighted_params);
-
-        screen.addView(signature);
-        screen.addView(buttons);
-
+        wipe("Test Page 2", this::test2);
     }
 
     @Override
@@ -493,6 +259,115 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void setup(){
+        wipe("Welcome", null);
+
+        TextView directions = new TextView(this);
+        directions.setText("Welcome to the Medication Tracker. Let's begin by setting up the first Admin Account. This action should be performed by " +
+                "the highest-ranked staff member who will be actively involved in record-keeping.");
+        scroll_child.addView(directions);
+
+        EditText name = new EditText(this);
+        name.setHint("Full Name");
+        scroll_child.addView(name);
+
+        EditText pass = new EditText(this);
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        EditText confirm = new EditText(this);
+        confirm.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        pass.setHint("Create Password");
+        confirm.setHint("Confirm Password");
+        scroll_child.addView(pass);
+        scroll_child.addView(confirm);
+
+        Button submit = new Button(this);
+        submit.setText("Continue");
+        scroll_child.addView(submit);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!pass.getText().toString().equals(confirm.getText().toString())) {
+                    pass.setText("");
+                    confirm.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("Try Again", null);
+                    warning.setTitle("Invalid passwords");
+                    warning.setMessage("The passwords must match");
+                    warning.show();
+                } else if (pass.getText().toString().length() <= 0) {
+                    pass.setText("");
+                    confirm.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid Password");
+                    warning.setMessage("You must enter a password");
+                    warning.show();
+                }
+                else if (name.getText().toString().length() <= 0) {
+                    pass.setText("");
+                    confirm.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid Name");
+                    warning.setMessage("You must enter a name");
+                    warning.show();
+                }
+                else {
+                    wipe("Create The Admin Password", null);
+                    TextView new_directions = new TextView(getApplicationContext());
+                    new_directions.setText("Please set the Admin password. This password should only be known to staff members who require the " +
+                            "ability to adjust and edit past records.");
+                    scroll_child.addView(new_directions);
+
+                    EditText admin_pass = new EditText(getApplicationContext());
+                    admin_pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    EditText confirm_admin = new EditText(getApplicationContext());
+                    confirm_admin.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    admin_pass.setHint("Create Admin Password");
+                    confirm_admin.setHint("Confirm Admin Password");
+                    Button save = new Button(getApplicationContext());
+                    save.setText("Save Password");
+                    save.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!admin_pass.getText().toString().equals(confirm_admin.getText().toString())) {
+                                admin_pass.setText("");
+                                confirm_admin.setText("");
+                                warning.setNegativeButton("", null);
+                                warning.setPositiveButton("Try Again", null);
+                                warning.setTitle("Invalid passwords");
+                                warning.setMessage("The passwords must match");
+                                warning.show();
+                            } else if (admin_pass.getText().toString().length() <= 0) {
+                                admin_pass.setText("");
+                                confirm_admin.setText("");
+                                warning.setNegativeButton("", null);
+                                warning.setPositiveButton("OK", null);
+                                warning.setTitle("Invalid Password");
+                                warning.setMessage("You must enter a password");
+                                warning.show();
+                            } else {
+                                editor.putString("admin_password", admin_pass.getText().toString());
+                                editor.apply();
+                                admin_password = admin_pass.getText().toString();
+
+                                Map<String, Object> admin = create_client(name.getText().toString(), System.currentTimeMillis(), "admin", pass.getText().toString());
+                                clients_db.addRow(admin);
+
+                                admin_mode = true;
+                                wipe("Medication Tracker", () -> home());
+                                admin();
+                            }
+                        }
+                    });
+                    scroll_child.addView(admin_pass);
+                    scroll_child.addView(confirm_admin);
+                    scroll_child.addView(save);
+                }
+            }
+        });
+    }
+
     public void home() {
 
         wipe("Medication Tracker", this::home);
@@ -502,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
         Button meds = new Button(this);
         Button admin = new Button(this);
         Button reset = new Button(this);
-        reset.setText("Reset App");
+        reset.setText("Generate Sample Clients");
         reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -513,8 +388,8 @@ public class MainActivity extends AppCompatActivity {
                         auto_reset();
                     }
                 });
-                warning.setTitle("Confirm Reset");
-                warning.setMessage("Did you misclick you big dummy? Are you sure you want to reset the test clients?");
+                warning.setTitle("Confirm Regenerating Sample Clients");
+                warning.setMessage("Did you misclick you big dummy? Are you sure you want to reset the sample clients?");
                 warning.show();
             }
         });
@@ -560,12 +435,12 @@ public class MainActivity extends AppCompatActivity {
         scroll_child.addView(meds);
         scroll_child.addView(admin);
         scroll_child.addView(reset);
-        scroll_child.addView(test);
-        scroll_child.addView(test2);
+        //scroll_child.addView(test);
+        //scroll_child.addView(test2);
     }
 
     public void password() {
-        wipe("Enter Password", null);
+        wipe("Enter Password", () -> password());
         EditText pass = new EditText(this);
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         pass.setHint("Enter Password");
@@ -575,6 +450,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (pass.getText().toString().equals(password) || (code != null && pass.getText().toString().equals(code))) {
+                    history.remove(0);
                     clients();
                 } else {
                     pass.setText("");
@@ -591,7 +467,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void admin_password() {
-        wipe("Enter Password", null);
+        wipe("Enter Password", () -> admin_password());
         EditText pass = new EditText(this);
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         pass.setHint("Enter Admin Password");
@@ -602,6 +478,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (pass.getText().toString().equals(admin_password) || (code != null && pass.getText().toString().equals(code))) {
                     admin_mode = true;
+                    history.remove(0);
                     admin();
                 } else {
                     pass.setText("");
@@ -627,7 +504,11 @@ public class MainActivity extends AppCompatActivity {
         admin_mode = true;
 
         Button change_pass = new Button(this);
-        change_pass.setText("Set Password");
+        if (password == null) {
+            change_pass.setText("Create Staff Password");
+        } else {
+            change_pass.setText("Alter Staff Password");
+        }
         change_pass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -663,6 +544,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         scroll_child.addView(view_client);
+
+        Button staff = new Button(this);
+        staff.setText("Staff");
+        staff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                staff();
+            }
+        });
+        scroll_child.addView(staff);
 
         Button spreadsheets = new Button(this);
         spreadsheets.setText("Generate Spreadsheets");
@@ -781,7 +672,7 @@ public class MainActivity extends AppCompatActivity {
                 warning.show();
             }
         });
-        scroll_child.addView(backup);
+        //scroll_child.addView(backup);
 
         Button restore = new Button(this);
         restore.setText("Manage Backup Data");
@@ -791,7 +682,7 @@ public class MainActivity extends AppCompatActivity {
                 manage();
             }
         });
-        scroll_child.addView(restore);
+        //scroll_child.addView(restore);
 
         Button delete = new Button(this);
         delete.setText("Delete Data");
@@ -802,6 +693,140 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         scroll_child.addView(delete);
+
+        Button reset = new Button(this);
+        reset.setText("Reset App");
+        reset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                warning.setNegativeButton("Cancel", null);
+                warning.setPositiveButton("Proceed", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        EditText pass = new EditText(getApplicationContext());
+                        pass.setHint("Enter Admin Password");
+                        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        warning.setView(pass);
+
+                        warning.setNegativeButton("Stop! This is a mistake!", null);
+                        warning.setPositiveButton("YES! DO IT! DO IT!", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                warning.setView(null);
+                                if (!pass.getText().toString().equals(admin_password)){
+                                    warning.setNegativeButton("", null);
+                                    warning.setPositiveButton("Drat! Foiled again!", null);
+                                    warning.setTitle("Dodged a bullet there...");
+                                    warning.setMessage("Looks like you don't know the admin password... phew! The data is safe from lunatics like you...");
+                                    warning.show();
+                                    return;
+                                }
+
+                                clients_db.reboot();
+                                prescriptions_db.reboot();
+                                entries_db.reboot();
+
+
+                                List<Long> backup_times =  gson.fromJson(prefs.getString("backup_times", gson.toJson(new ArrayList<>())), new TypeToken<List<Long>>(){}.getType());
+
+                                editor.putString("password", null);
+                                editor.putString("admin_password", null);
+                                editor.putString("backup_times", gson.toJson(new ArrayList<>()));
+                                editor.apply();
+                                password = null;
+                                admin_password = null;
+
+                                Map<String, String> client_map = new HashMap<>();
+                                client_map.put("name", "TINYTEXT");
+                                client_map.put("admit", "BIGINT");
+                                client_map.put("active", "BOOLEAN");
+                                client_map.put("discharge", "BIGINT");
+                                client_map.put("edits", "TINYINT");
+                                client_map.put("class", "TINYTEXT");
+                                client_map.put("password", "TINYTEXT");
+
+                                Map<String, String> prescriptions_map = new HashMap<>();
+                                prescriptions_map.put("client_id", "INT");
+                                prescriptions_map.put("drug", "TINYTEXT");
+                                prescriptions_map.put("dose", "TINYTEXT");
+                                prescriptions_map.put("dose_max", "FLOAT");
+                                prescriptions_map.put("daily_max", "FLOAT");
+                                prescriptions_map.put("instructions", "TINYTEXT");
+                                prescriptions_map.put("as_needed", "BOOLEAN");
+                                prescriptions_map.put("controlled", "BOOLEAN");
+                                prescriptions_map.put("count", "FLOAT");
+                                prescriptions_map.put("indication", "TINYTEXT");
+                                prescriptions_map.put("prescriber", "TINYTEXT");
+                                prescriptions_map.put("pharmacy", "TINYTEXT");
+                                prescriptions_map.put("start", "BIGINT");
+                                prescriptions_map.put("end", "BIGINT");
+                                prescriptions_map.put("active", "BOOLEAN");
+                                prescriptions_map.put("name", "TINYTEXT");
+                                prescriptions_map.put("edits", "TINYINT");
+
+                                Map<String, String> entries_map = new HashMap<>();
+                                entries_map.put("client_id", "INT");
+                                entries_map.put("prescription_id", "INT");
+                                entries_map.put("drug", "TINYTEXT");
+                                entries_map.put("datetime", "BIGINT");
+                                entries_map.put("old_count", "FLOAT");
+                                entries_map.put("change", "FLOAT");
+                                entries_map.put("new_count", "FLOAT");
+                                entries_map.put("dose_override", "BOOLEAN");
+                                entries_map.put("daily_override", "BOOLEAN");
+                                entries_map.put("edits", "TINYINT");
+                                entries_map.put("method", "TINYTEXT");
+                                entries_map.put("client_signature", "LONGTEXT");
+                                entries_map.put("staff_1", "TINYINT");
+                                entries_map.put("staff_signature_1", "LONGTEXT");
+                                entries_map.put("staff_2", "TINYINT");
+                                entries_map.put("staff_signature_2", "LONGTEXT");
+                                entries_map.put("staff_present", "TINYTEXT");
+                                entries_map.put("notes", "LONGTEXT");
+
+                                for (int i = 0; i < backup_times.size(); i++){
+                                    long time = backup_times.get(i);
+
+                                    DatabaseHelper client_backup = new DatabaseHelper(getApplicationContext(),
+                                            "clients_" + time,
+                                            "clients_" + time,
+                                            client_map);
+
+                                    DatabaseHelper prescription_backup = new DatabaseHelper(getApplicationContext(),
+                                            "prescriptions_" + time,
+                                            "prescriptions_" + time,
+                                            prescriptions_map);
+
+                                    DatabaseHelper entry_backup = new DatabaseHelper(getApplicationContext(),
+                                            "entries_" + time,
+                                            "entries_" + time,
+                                            entries_map);
+
+                                    Context context = getApplicationContext();
+
+                                    context.deleteDatabase(client_backup.delete_database());
+                                    context.deleteDatabase(prescription_backup.delete_database());
+                                    context.deleteDatabase(entry_backup.delete_database());
+                                }
+                                history.clear();
+                                setup();
+                            }
+                        });
+                        warning.setTitle("SERIOUSLY, ARE YOU SURE?");
+                        warning.setMessage("This ain't no game, kid! There's no going back once you click that button! You're gonna delete everything! You're " +
+                                "one button away from a total data apocalypse! This ain't no joke! Make sure you know what you're doing!");
+                        warning.show();
+                    }
+                });
+                warning.setTitle("Are you sure?");
+                warning.setMessage("Resetting the application will essentially mimic an uninstall and reinstall of the application. This will " +
+                        "delete all current staff, clients, prescriptions, and entries from the databases. This will also " +
+                        "remove all passwords and delete all backups. None of this data can be recovered. Previously created spreadsheets will still " +
+                        "be in your device files. Are you sure you want to proceed?");
+                warning.show();
+            }
+        });
+        scroll_child.addView(reset);
     }
 
     public void make_password() {
@@ -854,6 +879,8 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("password", pass.getText().toString());
                     editor.apply();
                     password = pass.getText().toString();
+                    history.remove(0);
+                    history.remove(0);
                     admin();
                 }
             }
@@ -924,6 +951,8 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("password", pass.getText().toString());
                     editor.apply();
                     password = pass.getText().toString();
+                    history.remove(0);
+                    history.remove(0);
                     admin();
                 }
             }
@@ -956,6 +985,8 @@ public class MainActivity extends AppCompatActivity {
                     password = null;
                     editor.putString("password", null);
                     editor.apply();
+                    history.remove(0);
+                    history.remove(0);
                     admin();
                 }
             }
@@ -969,7 +1000,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void make_admin_password() {
-        wipe("Create Your Admin Password", this::make_admin_password);
+        wipe("Create Your Admin Password", null);
         EditText admin_pass = new EditText(this);
         if (password != null) {
             admin_pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -1075,38 +1106,8 @@ public class MainActivity extends AppCompatActivity {
                     admin_password = pass.getText().toString();
                     editor.putString("admin_password", pass.getText().toString());
                     editor.apply();
-                    admin();
-                }
-            }
-        });
-
-        Button remove = new Button(this);
-        remove.setText("Remove Password");
-        remove.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (admin_password == null && !current.getText().toString().equals(password) && (code == null || !current.getText().toString().equals(code))){
-                    current.setText("");
-                    pass.setText("");
-                    confirm.setText("");
-                    warning.setNegativeButton("", null);
-                    warning.setPositiveButton("Try Again", null);
-                    warning.setTitle("Incorrect Password");
-                    warning.setMessage("The password you entered is incorrect");
-                    warning.show();
-                } else if (admin_password != null && !current.getText().toString().equals(admin_password) && (code == null || !current.getText().toString().equals(code))) {
-                    current.setText("");
-                    pass.setText("");
-                    confirm.setText("");
-                    warning.setNegativeButton("", null);
-                    warning.setPositiveButton("Try Again", null);
-                    warning.setTitle("Incorrect Admin Password");
-                    warning.setMessage("The admin password you entered is incorrect");
-                    warning.show();
-                } else {
-                    admin_password = null;
-                    editor.putString("admin_password", null);
-                    editor.apply();
+                    history.remove(0);
+                    history.remove(0);
                     admin();
                 }
             }
@@ -1116,7 +1117,6 @@ public class MainActivity extends AppCompatActivity {
         scroll_child.addView(pass);
         scroll_child.addView(confirm);
         scroll_child.addView(submit);
-        scroll_child.addView(remove);
     }
 
     public void clients(){
@@ -1155,7 +1155,7 @@ public class MainActivity extends AppCompatActivity {
         discharged.setText("Discharged Clients");
         scroll_child.addView(discharged);
 
-        ArrayList<Map<String, Object>> clients = clients_db.getRows(null, null, new String[]{"name", "ASC"}, false);
+        ArrayList<Map<String, Object>> clients = clients_db.getRows(null, new String[]{"class='client'"}, new String[]{"name", "ASC"}, false);
 
         int position = scroll_child.indexOfChild(current) + 1;
         int trigger = 0;
@@ -1197,6 +1197,300 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void staff(){
+        wipe("Current Staff", this::staff);
+
+        Button new_client = new Button(this);
+        new_client.setText("Add A New Staff Member");
+        new_client.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new_staff();
+            }
+        });
+        scroll_child.addView(new_client);
+
+        TextView current = new TextView(this);
+        current.setText("Current Staff");
+        scroll_child.addView(current);
+
+
+        ArrayList<Map<String, Object>> clients = clients_db.getRows(null, new String[]{"class IN ('admin','staff')"}, new String[]{"name", "ASC"}, false);
+
+        for (int i = 0; i < clients.size(); i++) {
+            Map<String, Object> client = clients.get(i);
+            Button current_client = new Button(this);
+            current_client.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Map<String, Object> current = clients_db.getSingleRow(null, new String[]{"id="+client.get("id")});
+                    staff_summary(current);
+                }
+            });
+            current_client.setText((String) client.get("name"));
+            scroll_child.addView(current_client);
+        }
+    }
+
+    public void staff_summary(Map<String, Object> client) {
+
+        wipe((String) client.get("name"), () -> staff_summary(client));
+
+
+        String client_string = "This staff member started on " + long_to_date((long) client.get("admit"));
+
+
+        TextView admit_date = new TextView(this);
+        admit_date.setText(client_string);
+        scroll_child.addView(admit_date);
+
+        Button remove_admin = new Button(this);
+        remove_admin.setText("Revoke Admin Privileges");
+
+        Button admin = new Button(this);
+        admin.setText("Grant Admin Privileges");
+        admin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText pass = new EditText(getApplicationContext());
+                pass.setInputType(InputType.TYPE_CLASS_TEXT| InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                warning.setNegativeButton("Cancel", null);
+                warning.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        warning.setView(null);
+
+                        ArrayList<Map<String, Object>> admins = clients_db.getRows(null,
+                                new String[]{"password='"+pass.getText().toString()+"'", "class='admin'"}, null, false);
+                        if (admins.size() == 0){
+                            pass.setText("");
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("Invalid password");
+                            warning.setMessage("That password does not match the password of any current administrators. Only administrators can grant admin privileges.");
+                            warning.show();
+                        }
+                        else {
+                            scroll_child.addView(remove_admin, scroll_child.indexOfChild(admin));
+                            scroll_child.removeView(admin);
+
+
+                            client.put("class", "admin");
+                            clients_db.update(client, new String[]{"id="+client.get("id")});
+                        }
+                    }
+                });
+                warning.setTitle("Confirm granting admin privileges");
+                warning.setView(pass);
+                warning.setMessage("Please enter your password to confirm granting this staff member administrative privileges.");
+                warning.show();
+            }
+        });
+
+        remove_admin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!check_admin((int)client.get("id"))){
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Cannot revoke the final admin");
+                    warning.setMessage("This application requires at least one administrator in order to function. Please give at least one other staff member " +
+                            "administrative privileges before revoking this staff member's privileges.");
+                    warning.show();
+                    return;
+                }
+                EditText pass = new EditText(getApplicationContext());
+                pass.setInputType(InputType.TYPE_CLASS_TEXT| InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                warning.setNegativeButton("Cancel", null);
+                warning.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        warning.setView(null);
+
+                        ArrayList<Map<String, Object>> admins = clients_db.getRows(null,
+                                new String[]{"password='"+pass.getText().toString()+"'", "class='admin'"}, null, false);
+                        if (admins.size() == 0){
+                            pass.setText("");
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("Invalid password");
+                            warning.setMessage("That password does not match the password of any current administrators. Only administrators can revoke admin privileges.");
+                            warning.show();
+                        }
+                        else {
+                            scroll_child.addView(admin, scroll_child.indexOfChild(remove_admin));
+                            scroll_child.removeView(remove_admin);
+
+                            client.put("class", "staff");
+                            clients_db.update(client, new String[]{"id="+client.get("id")});
+                        }
+                    }
+                });
+                warning.setTitle("Confirm revoking admin privileges");
+                warning.setView(pass);
+                warning.setMessage("Please enter your password to confirm revoking this staff member's administrative privileges.");
+                warning.show();
+            }
+        });
+
+        if (client.get("class").equals("staff")){
+            scroll_child.addView(admin);
+        }
+        else{
+            scroll_child.addView(remove_admin);
+        }
+
+        Button see_entries = new Button(this);
+        see_entries.setText("View History");
+        see_entries.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                history((int)client.get("id"));
+            }
+        });
+        scroll_child.addView(see_entries);
+
+        Button delete = new Button(this);
+        delete.setText("Delete Staff Member");
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!check_admin((int)client.get("id"))){
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Cannot delete the final admin");
+                    warning.setMessage("This application requires at least one administrator in order to function. Please give at least one other staff member " +
+                            "administrative privileges before deleting this staff member.");
+                    warning.show();
+                    return;
+                }
+                EditText pass = new EditText(getApplicationContext());
+                pass.setInputType(InputType.TYPE_CLASS_TEXT| InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                warning.setNegativeButton("Cancel", null);
+                warning.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        warning.setView(null);
+
+                        ArrayList<Map<String, Object>> admins = clients_db.getRows(null,
+                                new String[]{"password='"+pass.getText().toString()+"'", "class='admin'"}, null, false);
+                        if (admins.size() == 0){
+                            pass.setText("");
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("Invalid password");
+                            warning.setMessage("That password does not match the password of any current administrators. Only administrators can delete staff members.");
+                            warning.show();
+                        }
+                        else {
+                            clients_db.delete_single_constraint("id="+client.get("id"));
+                            history.remove(0);
+                            history.remove(0);
+                            staff();
+                        }
+                    }
+                });
+                warning.setTitle("Confirm Staff Deletion");
+                warning.setView(pass);
+                warning.setMessage("Please enter your password to confirm deleting this staff member from the database.");
+                warning.show();
+            }
+        });
+        scroll_child.addView(delete);
+    }
+
+    public boolean check_admin(int id){
+        ArrayList<Map<String, Object>> admins = clients_db.getRows(null,
+                new String[]{"id!="+id, "class='admin'"}, null, false);
+        if (admins.size() > 0){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void new_staff(){
+        wipe("Add A New Staff Member", this::new_staff);
+
+        EditText name = new EditText(this);
+        name.setHint("Full Name");
+        scroll_child.addView(name);
+
+        EditText pass = new EditText(this);
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        EditText confirm = new EditText(this);
+        confirm.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        pass.setHint("Create Password");
+        confirm.setHint("Confirm Password");
+
+        scroll_child.addView(pass);
+        scroll_child.addView(confirm);
+
+        CheckBox admin = new CheckBox(this);
+        admin.setText("Grant this user admin privileges.");
+        scroll_child.addView(admin);
+
+        Button add = new Button(this);
+        add.setText("Add Staff Member");
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (name.getText().toString().length() <= 0) {
+                    pass.setText("");
+                    confirm.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid Name");
+                    warning.setMessage("You must enter a name");
+                    warning.show();
+                }
+
+                else if (!pass.getText().toString().equals(confirm.getText().toString())){
+                    pass.setText("");
+                    confirm.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("Try Again", null);
+                    warning.setTitle("Invalid passwords");
+                    warning.setMessage("The passwords must match");
+                    warning.show();
+                }
+                else if (pass.getText().toString().length() <= 0) {
+                    pass.setText("");
+                    confirm.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid Password");
+                    warning.setMessage("You must enter a password");
+                    warning.show();
+                }
+                else if (clients_db.getRows(null, new String[]{"password='"+pass.getText().toString()+"'", "class IN ('admin','staff')"},
+                        null, false).size() > 0) {
+                    pass.setText("");
+                    confirm.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid Password");
+                    warning.setMessage("Your password must be unique");
+                    warning.show();
+                }
+                else {
+                    if (admin.isChecked()){
+                        clients_db.addRow(create_client(name.getText().toString(), System.currentTimeMillis(), "admin", pass.getText().toString()));
+                    }
+                    else{
+                        clients_db.addRow(create_client(name.getText().toString(), System.currentTimeMillis(), "staff", pass.getText().toString()));
+                    }
+                    history.remove(0);
+                    history.remove(0);
+                    staff();
+                }
+            }
+        });
+        scroll_child.addView(add);
+    }
+
     public void new_client(){
         wipe("Add A New Client", this::new_client);
 
@@ -1204,30 +1498,83 @@ public class MainActivity extends AppCompatActivity {
         name.setHint("Full Name");
         scroll_child.addView(name);
 
+        EditText pass = new EditText(this);
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        EditText confirm = new EditText(this);
+        confirm.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        pass.setHint("Create Password");
+        confirm.setHint("Confirm Password");
+
+        CheckBox def = new CheckBox(this);
+        def.setText("Use default password.");
+        def.setChecked(true);
+        def.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (def.isChecked()){
+                    scroll_child.removeView(pass);
+                    scroll_child.removeView(confirm);
+                }
+                else {
+                    scroll_child.addView(pass, 1);
+                    scroll_child.addView(confirm, 2);
+                }
+            }
+        });
+
         Button add = new Button(this);
         add.setText("Add Client");
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (name.getText().toString().length() > 0) {
-                    add_multiple_prescriptions(name.getText().toString(), null, new ArrayList<>());
-                }
-                else{
+
+                if (name.getText().toString().length() <= 0) {
+                    pass.setText("");
+                    confirm.setText("");
                     warning.setNegativeButton("", null);
                     warning.setPositiveButton("OK", null);
                     warning.setTitle("Invalid Name");
-                    warning.setMessage("You must enter a valid name for the new client");
+                    warning.setMessage("You must enter a name");
                     warning.show();
+                }
+
+                else if (!def.isChecked()){
+                    if (!pass.getText().toString().equals(confirm.getText().toString())){
+                        pass.setText("");
+                        confirm.setText("");
+                        warning.setNegativeButton("", null);
+                        warning.setPositiveButton("Try Again", null);
+                        warning.setTitle("Invalid passwords");
+                        warning.setMessage("The passwords must match");
+                        warning.show();
+                    }
+                    else if (pass.getText().toString().length() <= 0) {
+                        pass.setText("");
+                        confirm.setText("");
+                        warning.setNegativeButton("", null);
+                        warning.setPositiveButton("OK", null);
+                        warning.setTitle("Invalid Password");
+                        warning.setMessage("You must enter a password");
+                        warning.show();
+                    }
+                    else {
+                        add_multiple_prescriptions(name.getText().toString(), null, new ArrayList<>(), pass.getText().toString());
+                    }
+                }
+
+                else {
+                    add_multiple_prescriptions(name.getText().toString(), null, new ArrayList<>(), null);
                 }
             }
         });
+        scroll_child.addView(def);
         scroll_child.addView(add);
     }
 
-    public void add_multiple_prescriptions(String name, Integer client_id, List<Map<String, Object>> prescriptions) {
+    public void add_multiple_prescriptions(String name, Integer client_id, List<Map<String, Object>> prescriptions, String pass) {
         List<Map<String, Object>> prescription_copy = new ArrayList<>();
         prescription_copy.addAll(prescriptions);
-        wipe(name + " Intake Prescriptions", () -> add_multiple_prescriptions(name, client_id, prescription_copy));
+        wipe(name + " Intake Prescriptions", () -> add_multiple_prescriptions(name, client_id, prescription_copy, pass));
 
         if (prescriptions.size() > 0) {
             String text = ((String) prescriptions.get(0).get("name"));
@@ -1249,7 +1596,7 @@ public class MainActivity extends AppCompatActivity {
         new_script.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new_prescription(name, client_id, prescriptions);
+                new_prescription(name, client_id, prescriptions, pass);
             }
         });
         scroll_child.addView(new_script);
@@ -1261,7 +1608,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (prescriptions.size() > 0) {
-                    new_prescription_signoff(name, client_id, prescriptions);
+                    new_prescription_signoff(name, client_id, prescriptions, pass);
                 }
                 else {
 
@@ -1269,7 +1616,7 @@ public class MainActivity extends AppCompatActivity {
                     warning.setPositiveButton("Add Client", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            clients_db.addRow(create_client(name, System.currentTimeMillis()));
+                            clients_db.addRow(create_client(name, System.currentTimeMillis(), "client", pass));
                             history.remove(0);
                             history.remove(0);
                             history.remove(0);
@@ -1285,11 +1632,11 @@ public class MainActivity extends AppCompatActivity {
         scroll_child.addView(done);
     }
 
-    public void new_prescription(String client_name, Integer client_id, List<Map<String, Object>> prescriptions){
+    public void new_prescription(String client_name, Integer client_id, List<Map<String, Object>> prescriptions, String pass){
         List<Map<String, Object>> prescription_copy = new ArrayList<>();
         prescription_copy.addAll(prescriptions);
 
-        wipe("Add A New Prescription", () -> new_prescription(client_name, client_id, prescription_copy));
+        wipe("Add A New Prescription", () -> new_prescription(client_name, client_id, prescription_copy, pass));
 
         EditText name = new EditText(this);
         name.setHint("Medication Name");
@@ -1422,7 +1769,7 @@ public class MainActivity extends AppCompatActivity {
                             prn, control, count, reason, doctor, pharm, null);
 
                     prescriptions.add(script);
-                    add_multiple_prescriptions(client_name, client_id, prescriptions);
+                    add_multiple_prescriptions(client_name, client_id, prescriptions, pass);
                 }
                 else{
                     warning.setNegativeButton("", null);
@@ -1436,11 +1783,11 @@ public class MainActivity extends AppCompatActivity {
         scroll_child.addView(add);
     }
 
-    public void new_prescription_signoff(String name, Integer client_id, List<Map<String, Object>> scripts) {
+    public void new_prescription_signoff(String name, Integer client_id, List<Map<String, Object>> scripts, String pass) {
         List<Map<String, Object>> script_copy = new ArrayList<>();
         script_copy.addAll(scripts);
 
-        wipe("New Prescriptions Sign Off", () -> new_prescription_signoff(name, client_id, script_copy));
+        wipe("New Prescriptions Sign Off", () -> new_prescription_signoff(name, client_id, script_copy, pass));
 
 
         String text = (String) scripts.get(0).get("name");
@@ -1461,6 +1808,12 @@ public class MainActivity extends AppCompatActivity {
 
         final SignatureView signature = create_signature_view();
         LinearLayout buttons = new LinearLayout(this);
+
+        EditText pass_text = new EditText(this);
+        pass_text.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        pass_text.setHint("Enter Password");
+
+
 
         if (admin_mode){
             CheckBox manual = new CheckBox(this);
@@ -1496,7 +1849,22 @@ public class MainActivity extends AppCompatActivity {
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                ArrayList<Map<String, Object>> admins = clients_db.getRows(null,
+                        new String[]{"password='"+pass_text.getText().toString()+"'", "class IN ('admin', 'staff')"}, null, false);
+
+                if (admins.size() == 0){
+                    pass_text.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid password");
+                    warning.setMessage("That password does not match the password of any current staff member.");
+                    warning.show();
+                    return;
+                }
+
                 String staff_sign = gson.toJson(signature.getBytes());
+                Map<String, Object> admin = admins.get(0);
 
                 long time = System.currentTimeMillis();
 
@@ -1505,6 +1873,15 @@ public class MainActivity extends AppCompatActivity {
                 if (admin_mode){
                     CheckBox manual = (CheckBox) scroll_child.getChildAt(scroll_child.indexOfChild(prescriptions) + 1);
                     if (manual.isChecked()){
+
+                        if (!admin.get("class").equals("admin")){
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("No Admin Present");
+                            warning.setMessage("A staff member with administrative privileges must be present to manually enter dates and times.");
+                            warning.show();
+                            return;
+                        }
 
                         DatePicker date_picker = (DatePicker) scroll_child.getChildAt(scroll_child.indexOfChild(manual) + 1);
 
@@ -1523,7 +1900,8 @@ public class MainActivity extends AppCompatActivity {
                 String method = "PRESCRIPTION STARTED";
 
                 if (name != null){
-                    Map<String, Object> client = create_client(name, time);
+
+                    Map<String, Object> client = create_client(name, time, "client", pass);
 
                     new_client_id = clients_db.addRow(client);
 
@@ -1549,7 +1927,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Map<String, Object> entry = create_entry(new_client_id, id, (String) prescription.get("name"),
                             start, count, count, time, false, false, 0, method,
-                            null, staff_sign, null, notes);
+                            null, (int)admin.get("id"), staff_sign, null, null, (String)admin.get("name"), notes);
 
                     entries_db.addRow(entry);
                 }
@@ -1581,6 +1959,7 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        screen.addView(pass_text);
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -1629,7 +2008,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Map <String, Object> entry = create_entry((int) prescription.get("client_id"), (int) prescription.get("id"), (String) prescription.get("name"),
                         (float) prescription.get("count"), (float)0, (float) prescription.get("count"), null, false, false, 0, "COUNT",
-                        null, null, null, new ArrayList<>());
+                        null, null, null, null, null, null, new ArrayList<>());
                 entries.add(entry);
 
                 prescriptions.remove(0);
@@ -1725,7 +2104,7 @@ public class MainActivity extends AppCompatActivity {
                         text += "\n";
                     }
 
-                    text += "Please enter the actual count and a note about how and why the count is inaccurate.";
+                    text += "Please enter the actual count and a note about how and why the count is inaccurate. Fill out an incident report if the discrepancy cannot be accounted for.";
 
                     TextView prompt = new TextView(getApplicationContext());
                     prompt.setText(text);
@@ -1752,7 +2131,7 @@ public class MainActivity extends AppCompatActivity {
                                         (float) prescription.get("count"), Float.parseFloat(count.getText().toString()) - (float) prescription.get("count"),
                                         Float.parseFloat(count.getText().toString()),
                                         null, false, false, 0, "MISCOUNT",
-                                        null, null, null, notes);
+                                        null, null, null, null, null, null, notes);
                                 entries.add(entry);
 
 
@@ -1801,13 +2180,31 @@ public class MainActivity extends AppCompatActivity {
 
         SignatureView signature = create_signature_view();
 
+        EditText pass =  new EditText(this);
+
         Button confirm = new Button(this);
         confirm.setText("First Staff Sign Off");
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] staff_sign = signature.getBytes();
-                count_sign_2(entries, staff_sign);
+
+                ArrayList<Map<String, Object>> admins = clients_db.getRows(null,
+                        new String[]{"password='"+pass.getText().toString()+"'", "class IN ('admin', 'staff')"}, null, false);
+                if (admins.size() == 0){
+                    pass.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid password");
+                    warning.setMessage("That password does not match the password of any current staff member.");
+                    warning.show();
+                }
+                else {
+                    Map<String, Object> staff_1 = admins.get(0);
+                    byte[] staff_sign = signature.getBytes();
+                    count_sign_2(entries, staff_sign, staff_1);
+                }
+
+
             }
         });
         final Button clear = new Button(this);
@@ -1825,13 +2222,17 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        screen.addView(pass);
         screen.addView(signature);
         screen.addView(buttons);
     }
 
-    public void count_sign_2(List<Map<String, Object>> entries, byte[] sign_1) {
+    public void count_sign_2(List<Map<String, Object>> entries, byte[] sign_1, Map<String, Object> staff_1) {
 
-        wipe("Second Staff Sign Off On Count", () -> count_sign_2(entries, sign_1));
+        wipe("Second Staff Sign Off On Count", () -> count_sign_2(entries, sign_1, staff_1));
 
         int client_id = (int) entries.get(0).get("client_id");
 
@@ -1881,61 +2282,91 @@ public class MainActivity extends AppCompatActivity {
             scroll_child.addView(manual);
         }
 
+        EditText pass =  new EditText(this);
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         Button confirm = new Button(this);
         confirm.setText("Second Staff Sign Off");
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String staff_sign_2 = gson.toJson(signature.getBytes());
-                String staff_sign_1 = gson.toJson(sign_1);
 
-                long time = System.currentTimeMillis();
+                ArrayList<Map<String, Object>> admins = clients_db.getRows(null,
+                        new String[]{"password='"+pass.getText().toString()+"'", "class IN ('admin', 'staff')"}, null, false);
 
-                boolean double_check = false;
+                if (admins.size() == 0){
+                    pass.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid password");
+                    warning.setMessage("That password does not match the password of any current staff member.");
+                    warning.show();
+                }
+                else {
+                    String staff_sign_2 = gson.toJson(signature.getBytes());
+                    String staff_sign_1 = gson.toJson(sign_1);
+                    Map<String, Object> staff_2 = admins.get(0);
 
-                if (admin_mode){
-                    CheckBox manual = (CheckBox) scroll_child.getChildAt(scroll_child.indexOfChild(summary) + 1);
-                    if (manual.isChecked()){
+                    long time = System.currentTimeMillis();
 
-                        double_check = true;
+                    boolean double_check = false;
 
-                        DatePicker date_picker = (DatePicker) scroll_child.getChildAt(scroll_child.indexOfChild(manual) + 1);
+                    if (admin_mode){
+                        CheckBox manual = (CheckBox) scroll_child.getChildAt(scroll_child.indexOfChild(summary) + 1);
+                        if (manual.isChecked()){
+                            if (!staff_2.get("class").equals("admin") && !staff_1.get("class").equals("admin")){
+                                warning.setNegativeButton("", null);
+                                warning.setPositiveButton("OK", null);
+                                warning.setTitle("No Admins Present");
+                                warning.setMessage("A staff member with administrative privileges must be present to manually enter dates and times.");
+                                warning.show();
+                                return;
+                            }
 
-                        TimePicker time_picker = (TimePicker) scroll_child.getChildAt(scroll_child.indexOfChild(date_picker) + 1);
+                            double_check = true;
 
-                        String day = datepicker_to_date(date_picker) + " " + timepicker_to_time(time_picker);
+                            DatePicker date_picker = (DatePicker) scroll_child.getChildAt(scroll_child.indexOfChild(manual) + 1);
 
-                        time = datetime_to_long(day);
+                            TimePicker time_picker = (TimePicker) scroll_child.getChildAt(scroll_child.indexOfChild(date_picker) + 1);
+
+                            String day = datepicker_to_date(date_picker) + " " + timepicker_to_time(time_picker);
+
+                            time = datetime_to_long(day);
+                        }
                     }
+
+                    for (int i = 0; i < entries.size(); i++){
+                        Map<String, Object> entry = entries.get(i);
+
+                        entry.put("datetime", time);
+                        entry.put("staff_signature_1", staff_sign_1);
+                        entry.put("staff_signature_2", staff_sign_2);
+                        entry.put("staff_1", staff_1.get("id"));
+                        entry.put("staff_2", staff_2.get("id"));
+                        entry.put("staff_present", staff_1.get("name") + " and " + staff_2.get("name"));
+
+                        if (double_check){
+                            List <String> notes = gson.fromJson((String)entry.get("notes"), new TypeToken<List<String>>(){}.getType());
+                            notes.add(0, "MANUAL DATE/TIME ENTRY");
+                            entry.put("notes", gson.toJson(notes));
+                        }
+
+                        entries_db.addRow(entry);
+
+                        if (entry.get("method").equals("MISCOUNT")){
+                            Map<String, Object> updates = new HashMap<>();
+                            updates.put("count", entry.get("new_count"));
+                            prescriptions_db.update(updates, new String[]{"id="+entry.get("prescription_id")});
+                        }
+
+                    }
+                    for (int i = 0; i < entries.size() + 3; i++){
+                        history.remove(0);
+                    }
+                    clients();
                 }
 
-                for (int i = 0; i < entries.size(); i++){
-                    Map<String, Object> entry = entries.get(i);
-
-                    entry.put("datetime", time);
-                    entry.put("staff_signature_1", staff_sign_1);
-                    entry.put("staff_signature_2", staff_sign_2);
-
-                    if (double_check){
-                        List <String> notes = gson.fromJson((String)entry.get("notes"), new TypeToken<List<String>>(){}.getType());
-                        notes.add(0, "MANUAL DATE/TIME ENTRY");
-                        entry.put("notes", gson.toJson(notes));
-                    }
-
-                    entries_db.addRow(entry);
-
-                    if (entry.get("method").equals("MISCOUNT")){
-                        Map<String, Object> updates = new HashMap<>();
-                        updates.put("count", entry.get("new_count"));
-                        prescriptions_db.update(updates, new String[]{"id="+entry.get("prescription_id")});
-                    }
-
-                }
-                for (int i = 0; i < entries.size() + 3; i++){
-                    history.remove(0);
-                }
-                clients();
             }
         });
         final Button clear = new Button(this);
@@ -1953,6 +2384,7 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        screen.addView(pass);
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -2005,7 +2437,7 @@ public class MainActivity extends AppCompatActivity {
             new_script.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    add_multiple_prescriptions(null, (int) client.get("id"), new ArrayList<>());
+                    add_multiple_prescriptions(null, (int) client.get("id"), new ArrayList<>(), null);
                 }
             });
             scroll_child.addView(new_script);
@@ -2337,7 +2769,7 @@ public class MainActivity extends AppCompatActivity {
                                                             Map<String,Object> entry = create_entry((int)prescription.get("client_id"), script_id, drug,
                                                                     null, count, null,
                                                                     null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                                                                    null, null, null, finalNote);
+                                                                    null, null, null, null, null,null, finalNote);
 
                                                             client_confirm(new ArrayList<>(Arrays.asList(entry)), maxes);
                                                         }
@@ -2348,7 +2780,7 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                                 Map<String,Object> entry = create_entry((int)prescription.get("client_id"), script_id, drug, null, count, null,
                                                         null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                                                        null, null, null, finalNote);
+                                                        null, null, null, null, null,null, finalNote);
 
                                                 client_confirm(new ArrayList<>(Arrays.asList(entry)), maxes);
                                             }
@@ -2368,7 +2800,7 @@ public class MainActivity extends AppCompatActivity {
                                                 daily_override[0] = true;
                                                 Map<String,Object> entry = create_entry((int)prescription.get("client_id"), script_id, drug, null, count, null,
                                                         null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                                                        null, null, null, finalNote);
+                                                        null, null, null, null, null,null, finalNote);
 
                                                 client_confirm(new ArrayList<>(Arrays.asList(entry)), maxes);
                                             }
@@ -2380,7 +2812,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     Map<String,Object> entry = create_entry((int)prescription.get("client_id"), script_id, drug, null, count, null,
                                             null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                                            null, null, null, finalNote);
+                                            null, null, null, null, null, null, finalNote);
 
                                     client_confirm(new ArrayList<>(Arrays.asList(entry)), maxes);
                                 }
@@ -2639,7 +3071,7 @@ public class MainActivity extends AppCompatActivity {
                                     Map<String, Object> entry = create_entry((int)prescription.get("client_id"), (int)prescription.get("id"),
                                             (String) prescription.get("name"), null, count, null, null,
                                             false, false, 0, "REFILL", null,
-                                            null, null, new ArrayList<>());
+                                            null, null, null, null, null, new ArrayList<>());
                                     confirm_refill(Arrays.asList(entry));
                                 }
                             }
@@ -2666,7 +3098,7 @@ public class MainActivity extends AppCompatActivity {
                     Map<String, Object> entry = create_entry((int)prescription.get("client_id"), (int)prescription.get("id"),
                             (String) prescription.get("name"), finalStash, null, null, null,
                             false, false, 0, "PRESCRIPTION DISCONTINUED", null,
-                            null, null, new ArrayList<>());
+                            null, null, null, null, null, new ArrayList<>());
 
                     confirm_multiple_discontinue(new ArrayList<>(Arrays.asList(entry)));
                 }
@@ -2836,7 +3268,8 @@ public class MainActivity extends AppCompatActivity {
             TextView information = new TextView(this);
             String text = "";
             text += long_to_datetime((long) entry.get("datetime"));
-            text += "\n" + entry.get("drug");
+            text += "\nStaff Present: " + entry.get("staff_present");
+            //text += "\n" + entry.get("drug");
             String method = (String)entry.get("method");
             text += "\n" + method;
 
@@ -2899,6 +3332,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void take_meds(int client_id) {
+
         wipe("Take Meds", () -> take_meds(client_id));
 
         List<Map<String, Object>> prescriptions = prescriptions_db.getRows(
@@ -3100,7 +3534,7 @@ public class MainActivity extends AppCompatActivity {
                                             daily_override[0] = true;
                                             Map<String,Object> entry = create_entry(client_id, script_id, drug, null, count, null,
                                                     null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                                                    null, null, null, finalNote);
+                                                    null, null, null, null, null,null, finalNote);
                                             entries.add(entry);
                                             clean_entries(client_id, finalI + 5, entries, maxes);
                                         }
@@ -3111,7 +3545,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 Map<String,Object> entry = create_entry(client_id, script_id, drug, null, count, null,
                                         null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                                        null, null, null, finalNote);
+                                        null, null, null, null, null,null, finalNote);
                                 entries.add(entry);
                                 clean_entries(client_id, finalI + 5, entries, maxes);
                             }
@@ -3133,7 +3567,7 @@ public class MainActivity extends AppCompatActivity {
                                 daily_override[0] = true;
                                 Map<String,Object> entry = create_entry(client_id, script_id, drug, null, count, null,
                                         null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                                        null, null, null, finalNote);
+                                        null, null, null, null, null, null, finalNote);
                                 entries.add(entry);
                                 clean_entries(client_id, finalI + 5, entries, maxes);
                             }
@@ -3145,7 +3579,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Map<String,Object> entry = create_entry(client_id, script_id, drug, null, count, null,
                             null, dose_override[0], daily_override[0], 0, "TOOK MEDS",
-                            null, null, null, note);
+                            null, null, null, null, null, null, note);
                     entries.add(entry);
                 }
                 i+=4;
@@ -3188,13 +3622,84 @@ public class MainActivity extends AppCompatActivity {
 
         final SignatureView signature = create_signature_view();
 
+        EditText pass = new EditText(this);
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
         final Button confirm = new Button(this);
         confirm.setText("Client Signoff");
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                byte[] sign = signature.getBytes();
-                confirm(entries, sign, maxes);
+                Map<String, Object> client = clients_db.getSingleRow(null,
+                        new String[]{"id="+entries.get(0).get("client_id")});
+                if (client.get("password") == null){
+                    if (pass.getText().toString().equals(long_to_date((long)client.get("admit")).replace("/", ""))){
+                        wipe("Create A New Password", null);
+                        TextView new_directions = new TextView(getApplicationContext());
+                        new_directions.setText("You are still using your default password. Please make a new password.");
+                        scroll_child.addView(new_directions);
+
+                        EditText admin_pass = new EditText(getApplicationContext());
+                        admin_pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        EditText confirm_admin = new EditText(getApplicationContext());
+                        confirm_admin.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        admin_pass.setHint("Create Password");
+                        confirm_admin.setHint("Confirm Password");
+                        Button save = new Button(getApplicationContext());
+                        save.setText("Save Password");
+                        save.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (!admin_pass.getText().toString().equals(confirm_admin.getText().toString())) {
+                                    admin_pass.setText("");
+                                    confirm_admin.setText("");
+                                    warning.setNegativeButton("", null);
+                                    warning.setPositiveButton("Try Again", null);
+                                    warning.setTitle("Invalid passwords");
+                                    warning.setMessage("The passwords must match");
+                                    warning.show();
+                                } else if (admin_pass.getText().toString().length() <= 0) {
+                                    admin_pass.setText("");
+                                    confirm_admin.setText("");
+                                    warning.setNegativeButton("", null);
+                                    warning.setPositiveButton("OK", null);
+                                    warning.setTitle("Invalid Password");
+                                    warning.setMessage("You must enter a password");
+                                    warning.show();
+                                } else {
+                                    client.put("password", admin_pass.getText().toString());
+
+                                    clients_db.update(client, new String[]{"id="+client.get("id")});
+
+                                    byte[] sign = signature.getBytes();
+                                    confirm(entries, sign, maxes);
+                                }
+                            }
+                        });
+                        scroll_child.addView(admin_pass);
+                        scroll_child.addView(confirm_admin);
+                        scroll_child.addView(save);
+                    }
+                    else{
+                        warning.setNegativeButton("", null);
+                        warning.setPositiveButton("OK", null);
+                        warning.setTitle("Invalid password");
+                        warning.setMessage("That password does not match the password of the current client.");
+                        warning.show();
+                    }
+                }
+                else if (pass.getText().toString().equals(client.get("password"))){
+                    byte[] sign = signature.getBytes();
+                    confirm(entries, sign, maxes);
+                }
+                else {
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid password");
+                    warning.setMessage("That password does not match the password of the current client.");
+                    warning.show();
+                }
             }
         });
         final Button clear = new Button(this);
@@ -3212,6 +3717,27 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        if (admin_mode){
+            Button skip = new Button(this);
+            skip.setText("Client is not present");
+            skip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    confirm(entries, null, maxes);
+                }
+            });
+
+            LinearLayout pass_skip = new LinearLayout(this);
+            pass_skip.setOrientation(LinearLayout.HORIZONTAL);
+            pass_skip.addView(pass);
+            pass_skip.addView(skip);
+            pass.setLayoutParams(weighted_params);
+
+            screen.addView(pass_skip);
+        }
+        else{
+            screen.addView(pass);
+        }
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -3275,13 +3801,50 @@ public class MainActivity extends AppCompatActivity {
             scroll_child.addView(manual);
         }
 
+        EditText pass = new EditText(this);
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
         Button confirm = new Button(this);
         confirm.setText("Staff Signoff");
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                List<Map<String, Object>> admins = clients_db.getRows(null, new String[]{"password='"+pass.getText().toString()+"'"}, null, false);
+
+                if (admins.size() == 0){
+                    pass.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid password");
+                    warning.setMessage("That password does not match the password of any current staff members.");
+                    warning.show();
+                    return;
+                }
+
+                Map<String, Object> staff = admins.get(0);
+
                 String staff_sign = gson.toJson(signature.getBytes());
-                String client_signature = gson.toJson(client_sign);
+
+                String client_signature;
+
+                if (client_sign == null){
+                    if (!staff.get("class").equals("admin")){
+                        warning.setNegativeButton("", null);
+                        warning.setPositiveButton("OK", null);
+                        warning.setTitle("No administrators present");
+                        warning.setMessage("You must be an administrator to record a client taking medications when the client is not present.");
+                        warning.show();
+                        return;
+                    }
+                    else {
+                        client_signature = null;
+                    }
+                }
+                else {
+                    client_signature = gson.toJson(client_sign);
+                }
 
                 long time = System.currentTimeMillis();
 
@@ -3293,6 +3856,15 @@ public class MainActivity extends AppCompatActivity {
                 if (admin_mode){
                     manual = (CheckBox) scroll_child.getChildAt(scroll_child.indexOfChild(info) + 1);
                     if (manual.isChecked()){
+
+                        if (!staff.get("class").equals("admin")){
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("No administrators present");
+                            warning.setMessage("You must be an administrator to enter dates and times manually.");
+                            warning.show();
+                            return;
+                        }
 
                         DatePicker date_picker = (DatePicker) scroll_child.getChildAt(scroll_child.indexOfChild(manual) + 1);
 
@@ -3328,9 +3900,11 @@ public class MainActivity extends AppCompatActivity {
                     Map<String, Object> entry = entries.get(i);
                     entry.put("client_signature", client_signature);
                     entry.put("staff_signature_1", staff_sign);
+                    entry.put("staff_1", staff.get("id"));
+                    entry.put("staff_present", staff.get("name"));
                     entry.put("datetime", time);
                     Map<String, Object> prescription = prescriptions_db.getSingleRow(new String[]{"controlled", "count"}, new String[]{"id="+entry.get("prescription_id")});
-                    if (double_check){
+                    if (double_check && maxes.get(entry.get("prescription_id")) != null){
                         if (counts.get(entry.get("prescription_id")) + (float) entry.get("change") > maxes.get(entry.get("prescription_id"))){
                             entry.put("daily_override", true);
                         }
@@ -3384,6 +3958,7 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        screen.addView(pass);
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -3465,14 +4040,14 @@ public class MainActivity extends AppCompatActivity {
                                     ((Button)scroll_child.getChildAt(i + add)).getText().toString(), (float)prescriptions.get(i).get("count"),
                                     count, (float)prescriptions.get(i).get("count") + count, null,
                                     false, false, 0, "REFILL", null,
-                                    null, null, new ArrayList<>());
+                                    null, null, null, null ,null, new ArrayList<>());
                         }
                         else {
                             entry = create_entry(client_id, (int)prescriptions.get(i).get("id"),
                                     ((Button)scroll_child.getChildAt(i + add)).getText().toString(), null,
                                     count, null, null,
                                     false, false, 0, "REFILL", null,
-                                    null, null, new ArrayList<>());
+                                    null, null, null, null, null, new ArrayList<>());
                         }
                         entries.add(entry);
                         add++;
@@ -3511,6 +4086,10 @@ public class MainActivity extends AppCompatActivity {
 
         final SignatureView signature = create_signature_view();
 
+        EditText pass = new EditText(this);
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
         if (admin_mode){
             CheckBox manual = new CheckBox(this);
             manual.setText("Manual Date And Time Entry");
@@ -3542,6 +4121,21 @@ public class MainActivity extends AppCompatActivity {
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                List<Map<String, Object>> admins = clients_db.getRows(null, new String[]{"password='"+pass.getText().toString()+"'"}, null, false);
+
+                if (admins.size() == 0){
+                    pass.setText("");
+                    warning.setNegativeButton("", null);
+                    warning.setPositiveButton("OK", null);
+                    warning.setTitle("Invalid password");
+                    warning.setMessage("That password does not match the password of any current staff members.");
+                    warning.show();
+                    return;
+                }
+
+                Map<String, Object> staff = admins.get(0);
+
                 String staff_sign = gson.toJson(signature.getBytes());
 
                 long time = System.currentTimeMillis();
@@ -3550,6 +4144,15 @@ public class MainActivity extends AppCompatActivity {
                 if (admin_mode){
                     CheckBox manual = (CheckBox) scroll_child.getChildAt(scroll_child.indexOfChild(info) + 1);
                     if (manual.isChecked()){
+
+                        if (!staff.get("class").equals("admin")){
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("No administrators present");
+                            warning.setMessage("You must be an administrator to enter dates and times manually.");
+                            warning.show();
+                            return;
+                        }
 
                         double_check = true;
 
@@ -3566,6 +4169,8 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < entries.size(); i++) {
                     Map<String, Object> entry = entries.get(i);
                     entry.put("staff_signature_1", staff_sign);
+                    entry.put("staff_1", staff.get("id"));
+                    entry.put("staff_present", staff.get("name"));
                     entry.put("datetime", time);
                     Map<String, Object> prescription = prescriptions_db.getSingleRow(new String[]{"controlled", "count"}, new String[]{"id="+entry.get("prescription_id")});
 
@@ -3619,6 +4224,7 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        screen.addView(pass);
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -3859,6 +4465,11 @@ public class MainActivity extends AppCompatActivity {
 
         final SignatureView signature = create_signature_view();
 
+        EditText pass =  new EditText(this);
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+
         if (admin_mode){
             CheckBox manual = new CheckBox(this);
             manual.setText("Manual Date And Time Entry");
@@ -3895,6 +4506,20 @@ public class MainActivity extends AppCompatActivity {
                 warning.setPositiveButton("Update Prescriptions", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        List<Map<String, Object>> admins = clients_db.getRows(null, new String[]{"password='"+pass.getText().toString()+"'"}, null, false);
+
+                        if (admins.size() == 0){
+                            pass.setText("");
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("Invalid password");
+                            warning.setMessage("That password does not match the password of any current staff members.");
+                            warning.show();
+                            return;
+                        }
+
+                        Map<String, Object> staff = admins.get(0);
+
                         byte[] staff_sign = signature.getBytes();
                         long time = System.currentTimeMillis();
 
@@ -3902,6 +4527,15 @@ public class MainActivity extends AppCompatActivity {
                         if (admin_mode){
                             CheckBox manual = (CheckBox) scroll_child.getChildAt(scroll_child.indexOfChild(entry) + 1);
                             if (manual.isChecked()){
+
+                                if (!staff.get("class").equals("admin")){
+                                    warning.setNegativeButton("", null);
+                                    warning.setPositiveButton("OK", null);
+                                    warning.setTitle("No administrators present");
+                                    warning.setMessage("You must be an administrator to enter dates and times manually.");
+                                    warning.show();
+                                    return;
+                                }
 
                                 double_check = true;
                                 DatePicker date_picker = (DatePicker) scroll_child.getChildAt(scroll_child.indexOfChild(manual) + 1);
@@ -3928,7 +4562,7 @@ public class MainActivity extends AppCompatActivity {
 
                             int new_id = prescriptions_db.addRow(new_script);
 
-                            float count = (Float)new_script.get("count");
+                            Float count = (Float)new_script.get("count");
 
                             if (double_check){
                                 note.add("MANUAL DATE/TIME ENTRY");
@@ -3960,13 +4594,14 @@ public class MainActivity extends AppCompatActivity {
                             Map<String,Object> new_entry = create_entry(client_id,
                                     new_id, (String)new_script.get("name"), (float)0, count, count,
                                     time, false, false, 0,
-                                    "UPDATED PRESCRIPTION STARTED", null, gson.toJson(staff_sign),
-                                    null, note);
+                                    "UPDATED PRESCRIPTION STARTED", null, (int)staff.get("id"), gson.toJson(staff_sign), null,
+                                    null, (String)staff.get("name"), note);
 
                             Map<String,Object> old_entry = create_entry(client_id,
                                     (int)old_script.get("id"), (String)old_script.get("name"), count, null,
                                     null, time, false, false, 0,
-                                    "DISCONTINUED DUE TO UPDATE", null, gson.toJson(staff_sign), null, note);
+                                    "DISCONTINUED DUE TO UPDATE", null, (int)staff.get("id"),
+                                    gson.toJson(staff_sign), null,null, (String)staff.get("name"), note);
 
                             entries_db.addRow(new_entry);
                             entries_db.addRow(old_entry);
@@ -3999,6 +4634,7 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        screen.addView(pass);
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -4057,7 +4693,7 @@ public class MainActivity extends AppCompatActivity {
                         Map<String, Object> entry = create_entry(client_id, (int)prescriptions.get(i).get("id"),
                                 ((Button)scroll_child.getChildAt(i + add)).getText().toString(), count, null, null, null,
                                 false, false, 0, "PRESCRIPTION DISCONTINUED", null,
-                                null, null, new ArrayList<>());
+                                null, null, null, null, null, new ArrayList<>());
                         entries.add(entry);
                         add++;
                     }
@@ -4095,6 +4731,11 @@ public class MainActivity extends AppCompatActivity {
 
         final SignatureView signature = create_signature_view();
 
+
+        EditText pass =  new EditText(this);
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
         if (admin_mode){
             CheckBox manual = new CheckBox(this);
             manual.setText("Manual Date And Time Entry");
@@ -4131,6 +4772,20 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
+                        List<Map<String, Object>> admins = clients_db.getRows(null, new String[]{"password='"+pass.getText().toString()+"'"}, null, false);
+
+                        if (admins.size() == 0){
+                            pass.setText("");
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("Invalid password");
+                            warning.setMessage("That password does not match the password of any current staff members.");
+                            warning.show();
+                            return;
+                        }
+
+                        Map<String, Object> staff = admins.get(0);
+
                         String staff_sign = gson.toJson(signature.getBytes());
 
                         long time = System.currentTimeMillis();
@@ -4140,6 +4795,15 @@ public class MainActivity extends AppCompatActivity {
                         if (admin_mode){
                             CheckBox manual = (CheckBox) scroll_child.getChildAt(scroll_child.indexOfChild(info) + 1);
                             if (manual.isChecked()){
+
+                                if (!staff.get("class").equals("admin")){
+                                    warning.setNegativeButton("", null);
+                                    warning.setPositiveButton("OK", null);
+                                    warning.setTitle("No administrators present");
+                                    warning.setMessage("You must be an administrator to enter dates and times manually.");
+                                    warning.show();
+                                    return;
+                                }
 
                                 double_check = true;
                                 DatePicker date_picker = (DatePicker) scroll_child.getChildAt(scroll_child.indexOfChild(manual) + 1);
@@ -4155,6 +4819,8 @@ public class MainActivity extends AppCompatActivity {
                         for (int i = 0; i < entries.size(); i++) {
                             Map<String, Object> entry = entries.get(i);
                             entry.put("staff_signature_1", staff_sign);
+                            entry.put("staff_1", staff.get("id"));
+                            entry.put("staff_present", staff.get("name"));
                             entry.put("datetime", time);
                             if (double_check){
                                 entry.put("notes", gson.toJson(Arrays.asList("MANUAL DATE/TIME ENTRY")));
@@ -4204,6 +4870,7 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        screen.addView(pass);
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -4211,20 +4878,55 @@ public class MainActivity extends AppCompatActivity {
     public void history(int client_id) {
         wipe("Medication History", () -> history(client_id));
 
-        List<Object> entries = entries_db.getSingleColumn(
-                "datetime",
-                new String[]{"client_id=" + client_id},
-                "DESC", true
-        );
+        List<Object> entries;
 
+        boolean staff = false;
+
+        if (clients_db.getObject("class", new String[]{"id="+client_id}).equals("client")){
+            entries = entries_db.getSingleColumn(
+                    "datetime",
+                    new String[]{"client_id=" + client_id},
+                    "DESC", true
+            );
+        }
+        else {
+            staff = true;
+            entries = entries_db.getSingleColumn(
+                    "datetime",
+                    new String[]{"staff_1=" + client_id + " OR staff_2="+client_id},
+                    "DESC", true
+            );
+        }
+
+        boolean finalStaff = staff;
         List<String> other_methods = Arrays.asList("CLIENT DISCHARGED", "COUNT", "MISCOUNT", "DISCONTINUED DUE TO UPDATE", "PRESCRIPTION DISCONTINUED");
 
         for (int i = 0; i < entries.size(); i++) {
 
             long entry_time = (long)entries.get(i);
 
+            List <Object> methods;
+            if (finalStaff){
+                methods = entries_db.getSingleColumn(
+                        "method",
+                        new String[]{"(staff_1=" + client_id + " OR staff_2="+client_id+")", "datetime="+entry_time},
+                        "ASC", true
+                );
+            }
+            else {
+                methods = entries_db.getSingleColumn(
+                        "method",
+                        new String[]{"client_id=" + client_id, "datetime="+entry_time},
+                        "ASC", true
+                );
+            }
+            String method_string = "";
+            for (int j = 0; j < methods.size(); j++){
+                method_string += " | " + methods.get(j);
+            }
+
             Button button = new Button(this);
-            button.setText(long_to_datetime(entry_time));
+            button.setText(long_to_datetime(entry_time) + method_string);
             button.setTag(false);
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -4232,16 +4934,41 @@ public class MainActivity extends AppCompatActivity {
                     if (!(Boolean) button.getTag()) {
                         button.setTag(true);
 
-                        List<Map<String, Object>> time_entries = entries_db.getRows(
-                                new String[]{"prescription_id", "drug", "datetime", "old_count", "change", "new_count", "dose_override", "daily_override", "edits", "method", "notes"},
-                                new String[]{"datetime=" + entry_time, "client_id="+client_id},
-                                new String[]{"drug", "ASC"}, false
-                        );
+                        List<Map<String, Object>> time_entries;
 
                         TextView info = new TextView(getApplicationContext());
                         String text = "";
+
+                        String attending = "";
+
+                        if (finalStaff){
+                            time_entries = entries_db.getRows(
+                                    new String[]{"prescription_id", "drug", "datetime", "old_count", "change", "new_count", "dose_override", "daily_override", "edits", "method", "notes", "client_id"},
+                                    new String[]{"datetime=" + entry_time, "(staff_1=" + client_id + " OR staff_2="+client_id + ")"},
+                                    new String[]{"client_id", "ASC", "prescription_id", "ASC"}, false
+                            );
+                        }
+                        else {
+                            time_entries = entries_db.getRows(
+                                    new String[]{"prescription_id", "drug", "datetime", "old_count", "change", "new_count", "dose_override", "daily_override", "edits", "method", "notes", "staff_present"},
+                                    new String[]{"datetime=" + entry_time, "client_id="+client_id},
+                                    new String[]{"staff_present", "ASC", "prescription_id", "ASC"}, false
+                            );
+                        }
+
                         for (int i = 0; i < time_entries.size(); i++) {
+
                             Map<String, Object> entry = time_entries.get(i);
+
+                            if (finalStaff && !clients_db.getObject("name", new String[]{"id="+time_entries.get(i).get("client_id")}).equals(attending)){
+                                attending = (String)clients_db.getObject("name", new String[]{"id="+time_entries.get(i).get("client_id")});
+                                text += "\n\n\nClient: " + attending;
+                            }
+                            else if (!finalStaff && !time_entries.get(i).get("staff_present").equals(attending)){
+                                attending = (String)time_entries.get(i).get("staff_present");
+                                text += "\n\n\nStaff Present: " + attending;
+                            }
+
                             text += "\n\n" + entry.get("drug");
 
                             String method = (String)entry.get("method");
@@ -4302,7 +5029,7 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                         }
-                        info.setText(text.substring(2));
+                        info.setText(text.substring(3));
                         scroll_child.addView(info, scroll_child.indexOfChild(button) + 1);
 
                     }
@@ -4364,6 +5091,12 @@ public class MainActivity extends AppCompatActivity {
                 if (end_string.equals(long_to_date(System.currentTimeMillis()))){
                     end_long = date_to_long(end_string);
                 }
+
+                Log.e("start string", start_string);
+                Log.e("end string", end_string);
+                Log.e("day string", long_to_date(System.currentTimeMillis()));
+                Log.e("start long", String.valueOf(start_long));
+                Log.e("end long", String.valueOf(end_long));
 
                 if (start_long >= end_long){
                     warning.setNegativeButton("", null);
@@ -4621,6 +5354,10 @@ public class MainActivity extends AppCompatActivity {
             scroll_child.addView(manual);
         }
 
+        EditText pass = new EditText(this);
+        pass.setHint("Enter Password");
+        pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
         Button confirm = new Button(this);
         confirm.setText("Staff Signoff");
         confirm.setOnClickListener(new View.OnClickListener() {
@@ -4631,6 +5368,21 @@ public class MainActivity extends AppCompatActivity {
                 warning.setPositiveButton("Discharge Client", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+
+                        List<Map<String, Object>> admins = clients_db.getRows(null, new String[]{"password='"+pass.getText().toString()+"'"}, null, false);
+
+                        if (admins.size() == 0){
+                            pass.setText("");
+                            warning.setNegativeButton("", null);
+                            warning.setPositiveButton("OK", null);
+                            warning.setTitle("Invalid password");
+                            warning.setMessage("That password does not match the password of any current staff members.");
+                            warning.show();
+                            return;
+                        }
+
+                        Map<String, Object> staff = admins.get(0);
+
                         byte[] staff_sign = signature.getBytes();
 
                         long time = System.currentTimeMillis();
@@ -4642,6 +5394,14 @@ public class MainActivity extends AppCompatActivity {
                             CheckBox manual = (CheckBox) scroll_child.getChildAt(0);
                             if (manual.isChecked()){
 
+                                if (!staff.get("class").equals("admin")){
+                                    warning.setNegativeButton("", null);
+                                    warning.setPositiveButton("OK", null);
+                                    warning.setTitle("No administrators present");
+                                    warning.setMessage("You must be an administrator to enter dates and times manually.");
+                                    warning.show();
+                                    return;
+                                }
 
                                 DatePicker date_picker = (DatePicker) scroll_child.getChildAt(scroll_child.indexOfChild(manual) + 1);
 
@@ -4664,7 +5424,8 @@ public class MainActivity extends AppCompatActivity {
                             Map<String, Object> entry = create_entry(client_id, (int)prescription.get("id"),
                                     (String)prescription.get("name"), (Float)prescription.get("count"), null,
                                     null, time, false, false, 0,
-                                    "CLIENT DISCHARGED", null, gson.toJson(staff_sign), null, notes);
+                                    "CLIENT DISCHARGED", null, (int)staff.get("id"), gson.toJson(staff_sign), null,
+                                    null, (String)staff.get("name"), notes);
 
                             entries_db.addRow(entry);
 
@@ -4707,6 +5468,7 @@ public class MainActivity extends AppCompatActivity {
         buttons.addView(confirm);
         confirm.setLayoutParams(weighted_params);
 
+        screen.addView(pass);
         screen.addView(signature);
         screen.addView(buttons);
     }
@@ -4716,7 +5478,7 @@ public class MainActivity extends AppCompatActivity {
         wipe("Create Spreadsheets", this::spreadsheets);
 
         final List<Map<String, Object>>[] client_list = new List[]{clients_db.getRows(null,
-                null, new String[]{"active", "DESC", "name", "ASC", "admit", "ASC"}, false)};
+                new String[]{"class='client'"}, new String[]{"active", "DESC", "name", "ASC", "admit", "ASC"}, false)};
 
         final List<String>[] client_names = new List[]{new ArrayList<>()};
         client_names[0].add("All Clients");
@@ -5070,7 +5832,7 @@ public class MainActivity extends AppCompatActivity {
                             if (all.isChecked() || (clients.isChecked() && prescriptions.isChecked() && entries.isChecked() &&
                                     adherence.isChecked() && client_picker.getSelectedItemPosition() == 0 &&
                                     prescription_picker.getSelectedItemPosition() == 0 && date_picker.getSelectedItemPosition() == 0)){
-                                List<Map<String, Object>> client = clients_db.getRows(null, null,
+                                List<Map<String, Object>> client = clients_db.getRows(null, new String[]{"class='client'"},
                                         new String[]{"active", "DESC", "name", "ASC", "admit", "ASC"}, false);
 
                                 Sheet clients = client_sheet(workbook, "Clients", client);
@@ -5143,11 +5905,11 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                                 else {
-                                    client = clients_db.getRows(null, null,
+                                    client = clients_db.getRows(null, new String[]{"class='client'"},
                                             new String[]{"active", "DESC", "name", "ASC"}, false);
                                     file_name += "All Clients";
                                     if (prescriptions.isChecked() && entries.isChecked() && adherence.isChecked()){
-                                        client_copy = clients_db.getRows(null, null,
+                                        client_copy = clients_db.getRows(null, new String[]{"class='client'"},
                                                 new String[]{"active", "DESC", "name", "ASC"}, false);
                                     }
                                 }
@@ -5518,7 +6280,7 @@ public class MainActivity extends AppCompatActivity {
         wipe("Edit Data", this::edit);
 
         final List<Map<String, Object>>[] client_list = new List[]{clients_db.getRows(null,
-                null, new String[]{"active", "DESC", "name", "ASC", "admit", "ASC"}, false)};
+                new String[]{"class='client'"}, new String[]{"active", "DESC", "name", "ASC", "admit", "ASC"}, false)};
 
         final List<String>[] client_names = new List[]{new ArrayList<>()};
 
@@ -5983,7 +6745,7 @@ public class MainActivity extends AppCompatActivity {
                                     time = datetime_to_long(day);
                                 }
 
-                                Map<String, Object> revised = create_client(name.getText().toString(), time);
+                                Map<String, Object> revised = create_client(name.getText().toString(), time, "client", (String) client.get("password"));
 
                                 if (!active.isChecked()){
                                     revised.put("active", false);
@@ -6044,7 +6806,7 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                         Map<String, Object> entry = create_entry((int)client.get("id"), (int)prescription.get("id"), (String)prescription.get("name"), count,
                                                 null, null, (long)revised.get("discharge"), false, false, 1, "CLIENT DISCHARGED",
-                                                null, null, null, Arrays.asList("Client was discharged through editing function by Admin."));
+                                                null, null, null, null, null,null, Arrays.asList("Client was discharged through editing function by Admin."));
                                         entries_db.addRow(entry);
                                     }
                                     if (edited){
@@ -7009,7 +7771,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 Map<String, Object> entry = create_entry((int)finalPossible.get(i).get("client_id"), (int)finalPossible.get(i).get("id"),
                                         (String)finalPossible.get(i).get("name"), old_count, updated_count, new_count, time, dose_override, daily_override, 1,
-                                        (String)object.get(0).get("method"), null, null, null, notes);
+                                        (String)object.get(0).get("method"), null, null,null, null, null, null, notes);
 
                                 entries_db.addRow(entry);
                                 if ((int)finalPossible.get(i).get("controlled") == 1){
@@ -7038,7 +7800,7 @@ public class MainActivity extends AppCompatActivity {
         wipe("Delete Data", this::delete);
 
         final List<Map<String, Object>>[] client_list = new List[]{clients_db.getRows(null,
-                null, new String[]{"active", "DESC", "name", "ASC", "admit", "ASC"}, false)};
+                new String[]{"class='client'"}, new String[]{"active", "DESC", "name", "ASC", "admit", "ASC"}, false)};
 
         final List<String>[] client_names = new List[]{new ArrayList<>()};
         client_names[0].add("All Clients");
@@ -7406,7 +8168,7 @@ public class MainActivity extends AppCompatActivity {
 
                         if (client == null){
                             if (type.equals("Clients")){
-                                clients_db.reboot();
+                                clients_db.delete_single_constraint("class='client'");
                                 prescriptions_db.reboot();
                                 entries_db.reboot();
 
@@ -7863,7 +8625,7 @@ public class MainActivity extends AppCompatActivity {
     public Sheet entry_sheet(Workbook workbook, String sheet_name, List<Map<String, Object>> entry_data){
 
         Sheet entries = workbook.createSheet(sheet_name.replace("/", "-"));
-        List<String> entry_headers = Arrays.asList("drug", "method", "old_count", "change", "new_count", "datetime", "notes",
+        List<String> entry_headers = Arrays.asList("drug", "method", "old_count", "change", "new_count", "datetime", "staff_present", "notes",
                 "dose_override", "daily_override", "client_signature", "staff_signature_1", "staff_signature_2", "edits");
 
         List<String> exclude = Arrays.asList("client_signature", "staff_signature_1", "staff_signature_2");
@@ -7938,7 +8700,13 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else{
                     if (entry.get(entry_headers.get(j)) == null){
-                        row.createCell(j).setCellValue("N/A");
+                        if (entry.get("method").equals("TOOK MEDS") && entry_headers.get(j).equals("client_signature")){
+                            row.createCell(j).setCellValue("Client was not present when this entry was recorded.");
+                        }
+                        else {
+                            row.createCell(j).setCellValue("N/A");
+                        }
+
                     }
                     else {
                         row.createCell(j);
@@ -8043,12 +8811,14 @@ public class MainActivity extends AppCompatActivity {
         return signature;
     }
 
-    public Map<String, Object> create_client(String name, Long time){
+    public Map<String, Object> create_client(String name, Long time, String type, String password){
         Map<String, Object> client = new HashMap<>();
         client.put("name", name.toUpperCase());
         client.put("active", true);
         client.put("admit", time);
         client.put("edits", 0);
+        client.put("class", type);
+        client.put("password", password);
 
         return client;
     }
@@ -8082,8 +8852,8 @@ public class MainActivity extends AppCompatActivity {
 
     public Map<String, Object> create_entry(Integer client_id, int prescription_id, String drug, Float old_count, Float count, Float new_count, Long time, Boolean dose_override,
                                             Boolean daily_override, Integer edits, String method,
-                                            String client_signature, String staff_signature_1, String staff_signature_2,
-                                            List<String> notes){
+                                            String client_signature, Integer staff_1, String staff_signature_1, Integer staff_2, String staff_signature_2,
+                                            String staff, List<String> notes){
 
         Map<String, Object> entries_map = new HashMap<>();
         entries_map.put("client_id", client_id);
@@ -8098,9 +8868,13 @@ public class MainActivity extends AppCompatActivity {
         entries_map.put("edits", edits);
         entries_map.put("method", method);
         entries_map.put("client_signature", client_signature);
+        entries_map.put("staff_1", staff_1);
         entries_map.put("staff_signature_1", staff_signature_1);
+        entries_map.put("staff_2", staff_2);
         entries_map.put("staff_signature_2", staff_signature_2);
+        entries_map.put("staff_present", staff);
         entries_map.put("notes", gson.toJson(notes));
+
 
         return entries_map;
     }
@@ -8156,14 +8930,13 @@ public class MainActivity extends AppCompatActivity {
         if (new_id == old_id){
             old_entries = entries_db.getRows(new String[]{"change", "id", "method", "datetime"},
                     new String[]{"prescription_id="+old_id},
-                    null, false);
+                    new String[]{"datetime", "ASC"}, false);
 
         }
         else {
             old_entries = entries_db.getRows(new String[]{"change", "id", "method", "datetime", "drug"},
                     new String[]{"datetime>"+datetime, "prescription_id="+old_id},
-                    null, false);
-
+                    new String[]{"datetime", "ASC"}, false);
         }
         String day_string = "";
         float day_count = 0;
@@ -8191,7 +8964,9 @@ public class MainActivity extends AppCompatActivity {
                         day_count = 0;
                         day_string = long_to_date((long)entry.get("datetime"));
                     }
+                    Log.e(String.valueOf(day_count), String.valueOf(new_daily_max));
                     day_count += (float) entry.get("change");
+                    Log.e(String.valueOf(day_count), String.valueOf(new_daily_max));
                     if (day_count > new_daily_max){
                         entry.put("daily_override", true);
                     }
@@ -8219,23 +8994,23 @@ public class MainActivity extends AppCompatActivity {
 
         if (switch_controlled){
             entries_db.addRow(create_entry(client_id, id, name, null, null, real_count, count_time, false, false, 1,
-                    "COUNT", null, null, null,
+                    "COUNT", null, null, null, null, null, null,
                     Arrays.asList("Prescription was set to 'controlled' and count was adjusted through editing function by Admin.")));
         }
         else if (reactivate_controlled){
             entries_db.addRow(create_entry(client_id, id, name, null, null, real_count, count_time, false, false, 1,
-                    "COUNT", null, null, null,
+                    "COUNT", null, null, null, null, null, null,
                     Arrays.asList("Controlled prescription was reactivated and count was set through editing function by Admin.")));
         }
         else if (change != null){
             entries_db.addRow(create_entry(client_id, id, name, old_count, change, real_count, count_time, false, false, 1,
-                    "MISCOUNT", null, null, null,
+                    "MISCOUNT", null, null, null, null, null, null,
                     Arrays.asList("Prescription count was adjusted through editing function by Admin.")));
         }
 
         if (active != null && !active){
             entries_db.addRow(create_entry(client_id, id, name, real_count, null, null, end, false, false, 1,
-                    "PRESCRIPTION DISCONTINUED", null, null, null,
+                    "PRESCRIPTION DISCONTINUED", null, null, null, null, null, null,
                     Arrays.asList("Prescription was discontinued through editing function by Admin.")));
         }
 
@@ -8338,9 +9113,16 @@ public class MainActivity extends AppCompatActivity {
             day = String.valueOf(calendar.getDayOfMonth());
         }
 
+        String month;
+        if (calendar.getMonth() + 1 < 10) {
+            month = "0" + (calendar.getMonth() + 1);
+        } else {
+            month = String.valueOf(calendar.getMonth() + 1);
+        }
+
         String start_year_string = String.valueOf(calendar.getYear()).substring(String.valueOf(calendar.getYear()).length() - 2);
 
-        return calendar.getMonth() + 1 + "/" + day + "/" + start_year_string;
+        return month + "/" + day + "/" + start_year_string;
     }
 
     public String timepicker_to_time(TimePicker clock){
@@ -8455,9 +9237,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void auto_reset(){
 
-        long time = datetime_to_long("12/01/20 01:00");
+        long time = datetime_to_long("02/01/21 01:00");
 
-        List<String> names = Arrays.asList("CHARLIE CLIENT", "DANTE DEMO", "ERIC EXAMPLE", "PATRICK PATIENT");
+        List<String> names = Arrays.asList("CHARLIE CLIENT", "DANTE DEMO", "ERIC EXAMPLE", "MATTHEW MODEL", "PATRICK PATIENT");
 
         String ids = "(";
         for (int i = 0; i < names.size(); i++){
@@ -8476,59 +9258,59 @@ public class MainActivity extends AppCompatActivity {
         }
 
         List<Long> entry_times = new ArrayList<>();
-        entry_times.add(datetime_to_long("12/02/20 02:00"));
-        entry_times.add(datetime_to_long("12/02/20 03:00"));
-        entry_times.add(datetime_to_long("12/02/20 04:00"));
-        entry_times.add(datetime_to_long("12/03/20 02:00"));
-        entry_times.add(datetime_to_long("12/03/20 03:00"));
-        entry_times.add(datetime_to_long("12/03/20 04:00"));
-        entry_times.add(datetime_to_long("12/04/20 02:00"));
-        entry_times.add(datetime_to_long("12/04/20 03:00"));
-        entry_times.add(datetime_to_long("12/04/20 04:00"));
-        entry_times.add(datetime_to_long("12/05/20 02:00"));
-        entry_times.add(datetime_to_long("12/05/20 03:00"));
-        entry_times.add(datetime_to_long("12/05/20 04:00"));
-        entry_times.add(datetime_to_long("12/06/20 02:00"));
-        entry_times.add(datetime_to_long("12/06/20 03:00"));
-        entry_times.add(datetime_to_long("12/06/20 04:00"));
-        entry_times.add(datetime_to_long("12/07/20 02:00"));
-        entry_times.add(datetime_to_long("12/07/20 03:00"));
-        entry_times.add(datetime_to_long("12/07/20 04:00"));
-        entry_times.add(datetime_to_long("12/08/20 02:00"));
-        entry_times.add(datetime_to_long("12/08/20 03:00"));
-        entry_times.add(datetime_to_long("12/08/20 04:00"));
-        entry_times.add(datetime_to_long("12/09/20 02:00"));
-        entry_times.add(datetime_to_long("12/09/20 03:00"));
-        entry_times.add(datetime_to_long("12/09/20 04:00"));
+        entry_times.add(datetime_to_long("02/02/21 02:00"));
+        entry_times.add(datetime_to_long("02/03/21 02:00"));
+        entry_times.add(datetime_to_long("02/04/21 02:00"));
+        entry_times.add(datetime_to_long("02/05/21 02:00"));
+        entry_times.add(datetime_to_long("02/06/21 02:00"));
+        entry_times.add(datetime_to_long("02/07/21 02:00"));
+        entry_times.add(datetime_to_long("02/08/21 02:00"));
+        entry_times.add(datetime_to_long("02/09/21 02:00"));
+        entry_times.add(datetime_to_long("02/02/21 03:00"));
+        entry_times.add(datetime_to_long("02/03/21 03:00"));
+        entry_times.add(datetime_to_long("02/04/21 03:00"));
+        entry_times.add(datetime_to_long("02/05/21 03:00"));
+        entry_times.add(datetime_to_long("02/06/21 03:00"));
+        entry_times.add(datetime_to_long("02/07/21 03:00"));
+        entry_times.add(datetime_to_long("02/08/21 03:00"));
+        entry_times.add(datetime_to_long("02/09/21 03:00"));
+        entry_times.add(datetime_to_long("02/02/21 04:00"));
+        entry_times.add(datetime_to_long("02/03/21 04:00"));
+        entry_times.add(datetime_to_long("02/04/21 04:00"));
+        entry_times.add(datetime_to_long("02/05/21 04:00"));
+        entry_times.add(datetime_to_long("02/06/21 04:00"));
+        entry_times.add(datetime_to_long("02/07/21 04:00"));
+        entry_times.add(datetime_to_long("02/08/21 04:00"));
+        entry_times.add(datetime_to_long("02/09/21 04:00"));
 
         for (int i = 0; i < names.size(); i++){
 
-            Map<String, Object> client = create_client(names.get(i), time);
+            Map<String, Object> client = create_client(names.get(i), time, "client", null);
 
             int client_id = clients_db.addRow(client);
 
-            Map<String, Object> gabapentin = create_prescription(client_id, "Gabapentin", "600 MG", (float)1.0, (float)3.0,
-                    "Take 1 tab 3 times daily", false, true, (float)30, "Pain",
-                    "Dr. Gabriella", "CVS", time);
+            Map<String, Object> suboxone = create_prescription(client_id, "Suboxone", "8/2 MG", (float)1.0, (float)2.0,
+                    "Take 1 strip 2 times daily", false, true, (float)60, "Withdrawal",
+                    "Dr. Smith", "CVS", time);
 
-            Map<String, Object> clonazepam = create_prescription(client_id, "Clonazepam", "1 MG", (float)1.0, (float)2.0,
-                    "Take 1 tab up to 2 times daily as needed for anxiety", true, true, (float)30, "Anxiety",
-                    "Dr. Clark", "Walgreens", time);
+            Map<String, Object> gabapentin = create_prescription(client_id, "Gabapentin", "800 MG", (float)1.0, (float)2.0,
+                    "Take 1 tab up to 2 times daily as needed for pain", true, true, (float)60, "Pain",
+                    "Dr. Gabriella", "Walgreens", time);
 
-            Map<String, Object> ibuprofen = create_prescription(client_id, "Ibuprofen", "200 MG", (float)2.0, (float)8.0,
-                    "Take 1-2 tabs up to 4 times daily as needed for pain", true, false, null, "Pain",
-                    "Dr. Ichabod", "BMC", time);
+            Map<String, Object> hydroxyzine = create_prescription(client_id, "Hydroxyzine", "25 MG", (float)1.0, (float)2.0,
+                    "Take 1 tab up to 2 times daily as needed for anxiety", true, false, null, "Anxiety",
+                    "Dr. Hector", "BMC", time);
 
-            Map<String, Object> sertraline = create_prescription(client_id, "Sertraline", "100 MG", (float)2.0, (float)2.0,
-                    "Take 2 tabs once daily", false, false, null, "Depression",
-                    "Dr. Serena", "MGH", time);
+            Map<String, Object> sertraline = create_prescription(client_id, "Sertraline", "100 MG", (float)1.0, (float)2.0,
+                    "Take 1 tab twice daily", false, false, null, "Depression",
+                    "Dr. Salzman", "MGH", time);
 
             List<Map<String, Object>> prescriptions = new ArrayList<>();
 
             prescriptions.add(gabapentin);
             prescriptions.add(sertraline);
-            prescriptions.add(ibuprofen);
-            prescriptions.add(clonazepam);
+            prescriptions.add(hydroxyzine);
+            prescriptions.add(suboxone);
 
             for (int j = 0; j < prescriptions.size(); j++){
                 Map<String, Object> prescription = prescriptions.get(j);
@@ -8539,17 +9321,69 @@ public class MainActivity extends AppCompatActivity {
                 Float count = (Float) prescription.get("count");
 
                 entries_db.addRow(create_entry(client_id, id, drug, (float)0, count, count, time, false, false, 0, "INTAKE",
-                        null, null, null, new ArrayList<>()));
+                        null, null, null, null,null, "auto_reset", new ArrayList<>()));
 
                 for (int k = 0; k < entry_times.size(); k++){
-                    Float sub = null;
-                    if (count != null){
-                        sub = count - 1;
+
+                    if (i == 0 && k < 16){
+                        Float taken = (float) 1;
+                        Float sub = null;
+                        if (count != null){
+                            sub = count - taken;
+                        }
+                        entries_db.addRow(create_entry(client_id, id, drug, count, taken, sub, entry_times.get(k), false, false, 0, "TOOK MEDS",
+                                null, null, null, null,null, "auto_reset", new ArrayList<>()));
+                        if (count != null){
+                            count -= taken;
+                        }
                     }
-                    entries_db.addRow(create_entry(client_id, id, drug, count, (float) 1, sub, entry_times.get(k), false, false, 0, "TOOK MEDS",
-                            null, null, null, new ArrayList<>()));
-                    if (count != null){
-                        count -= 1;
+                    else if (i == 1 && k < 8){
+                        Float taken = (float) 1;
+                        Float sub = null;
+                        if (count != null){
+                            sub = count - taken;
+                        }
+                        entries_db.addRow(create_entry(client_id, id, drug, count, taken, sub, entry_times.get(k), false, false, 0, "TOOK MEDS",
+                                null, null, null, null,null, "auto_reset", new ArrayList<>()));
+                        if (count != null){
+                            count -= taken;
+                        }
+                    }
+                    else if (i == 2 && k < 8){
+                        Float taken = (float) 2;
+                        Float sub = null;
+                        if (count != null){
+                            sub = count - taken;
+                        }
+                        entries_db.addRow(create_entry(client_id, id, drug, count, taken, sub, entry_times.get(k), false, false, 0, "TOOK MEDS",
+                                null, null, null, null,null, "auto_reset", new ArrayList<>()));
+                        if (count != null){
+                            count -= taken;
+                        }
+                    }
+                    else if (i == 3){
+                        Float taken = (float) 1;
+                        Float sub = null;
+                        if (count != null){
+                            sub = count - taken;
+                        }
+                        entries_db.addRow(create_entry(client_id, id, drug, count, taken, sub, entry_times.get(k), false, false, 0, "TOOK MEDS",
+                                null, null, null, null,null, "auto_reset", new ArrayList<>()));
+                        if (count != null){
+                            count -= taken;
+                        }
+                    }
+                    else if (i == 4 && k < 16){
+                        Float taken = (float) 2;
+                        Float sub = null;
+                        if (count != null){
+                            sub = count - taken;
+                        }
+                        entries_db.addRow(create_entry(client_id, id, drug, count, taken, sub, entry_times.get(k), false, false, 0, "TOOK MEDS",
+                                null, null, null, null, null, "auto_reset", new ArrayList<>()));
+                        if (count != null){
+                            count -= taken;
+                        }
                     }
                 }
                 prescription.put("count", count);
