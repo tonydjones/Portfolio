@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.medicationtracker.MainActivity.gson;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public String DATABASE_NAME;
@@ -37,6 +39,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.create = "CREATE TABLE IF NOT EXISTS "
                 + name + " (id INTEGER PRIMARY KEY AUTOINCREMENT, " + text.substring(0, text.length() - 2) + ");";
         this.column_map = columns;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL(this.create);
     }
 
     @Override
@@ -57,7 +62,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public String delete_database() {
+    public String delete_table() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS '" + this.name + "'");
         db.close();
@@ -151,6 +156,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         for (int i = 0; i < constraints.length; i++){
             constraint_string += constraints[i] + " AND ";
         }
+
         constraint_string = constraint_string.substring(0, constraint_string.length() - 5);
 
 
@@ -165,7 +171,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String constraint_string = "";
         if (constraints != null && constraints.length > 0){
-            constraint_string += " WHERE ";
+            //constraint_string += " WHERE ";
             for (int i = 0; i < constraints.length; i++){
                 constraint_string += constraints[i] + " AND ";
             }
@@ -174,7 +180,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String selectQuery = "DELETE FROM " + this.name + constraint_string;
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL(selectQuery);
+        db.delete(this.name, constraint_string, null);
+        //db.execSQL(selectQuery);
         db.close();
     }
 
@@ -182,12 +189,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String constraint_string = "";
         if (constraint != null){
-            constraint_string += " WHERE " + constraint;
+            //constraint_string += " WHERE " + constraint;
+            constraint_string += constraint;
         }
 
         String selectQuery = "DELETE FROM " + this.name + constraint_string;
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL(selectQuery);
+        db.delete(this.name, constraint_string, null);
+        //db.execSQL(selectQuery);
         db.close();
     }
 
@@ -285,8 +294,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor c = db.rawQuery(selectQuery, null);
         // looping through all rows and adding to list
 
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = null;
+
         if (c.moveToFirst()) {
+            data = new HashMap<>();
             for (int i = 0; i < c.getColumnCount(); i++) {
                 int type = c.getType(i);
 
@@ -409,5 +420,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         dbCursor.close();
 
         return columnNames;
+    }
+
+    public Map<String, Object> manual_query(String query, String[] args) {
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(query, args);
+        //Cursor c = db.rawQuery(query, null);
+        // looping through all rows and adding to list
+
+        Map<String, Object> data = null;
+
+        if (c.moveToFirst()) {
+            data = new HashMap<>();
+            for (int i = 0; i < c.getColumnCount(); i++) {
+                int type = c.getType(i);
+
+                if (type == Cursor.FIELD_TYPE_STRING){
+                    data.put(c.getColumnName(i), c.getString(i));
+                }
+                else if (type == Cursor.FIELD_TYPE_FLOAT){
+                    data.put(c.getColumnName(i), c.getFloat(i));
+                }
+                else if (!c.getColumnName(i).equals("id") && this.column_map.get(c.getColumnName(i)).equals("BIGINT")){
+                    data.put(c.getColumnName(i), c.getLong(i));
+                }
+                else if (type == Cursor.FIELD_TYPE_INTEGER){
+                    data.put(c.getColumnName(i), c.getInt(i));
+                }
+                else if (type == Cursor.FIELD_TYPE_NULL) {
+                    data.put(c.getColumnName(i), null);
+                }
+            }
+        }
+        c.close();
+        db.close();
+        return data;
     }
 }
